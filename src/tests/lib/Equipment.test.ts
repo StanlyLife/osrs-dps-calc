@@ -118,4 +118,86 @@ describe('calculateEquipmentBonusesFromGear', () => {
       });
     });
   });
+
+  describe('with Demonic Pact thrown weapon bonuses', () => {
+    test('applies thrown accuracy and melee strength scaling to Drygore blowpipe', () => {
+      const monster = getTestMonster('Abyssal demon', 'Standard');
+      const equipment = {
+        weapon: findEquipment('Drygore blowpipe', 'Charged'),
+        neck: findEquipment('Amulet of strength'),
+      };
+
+      const basePlayer = getTestPlayer(monster, { equipment });
+      const pactPlayer = getTestPlayer(monster, {
+        equipment,
+        leagues: {
+          six: {
+            effects: {
+              talent_thrown_weapon_accuracy: 60,
+              talent_thrown_weapon_melee_str_scale: 1,
+            },
+          },
+        },
+      });
+
+      const baseBonuses = calculateEquipmentBonusesFromGear(basePlayer, monster);
+      const pactBonuses = calculateEquipmentBonusesFromGear(pactPlayer, monster);
+
+      expect(pactBonuses.offensive.ranged - baseBonuses.offensive.ranged).toBe(60);
+      expect(pactBonuses.bonuses.ranged_str - baseBonuses.bonuses.ranged_str).toBe(
+        Math.trunc(baseBonuses.bonuses.str * 0.80),
+      );
+    });
+
+    test('treats Toxic and Drygore blowpipe the same for thrown equipment pacts', () => {
+      const monster = getTestMonster('Abyssal demon', 'Standard');
+      const drygoreBaseBonuses = calculateEquipmentBonusesFromGear(getTestPlayer(monster, {
+        equipment: {
+          weapon: findEquipment('Drygore blowpipe', 'Charged'),
+          neck: findEquipment('Amulet of strength'),
+        },
+      }), monster);
+      const drygoreBonuses = calculateEquipmentBonusesFromGear(getTestPlayer(monster, {
+        equipment: {
+          weapon: findEquipment('Drygore blowpipe', 'Charged'),
+          neck: findEquipment('Amulet of strength'),
+        },
+        leagues: {
+          six: {
+            effects: {
+              talent_thrown_weapon_accuracy: 60,
+              talent_thrown_weapon_melee_str_scale: 1,
+            },
+          },
+        },
+      }), monster);
+      const toxicBaseBonuses = calculateEquipmentBonusesFromGear(getTestPlayer(monster, {
+        equipment: {
+          weapon: findEquipment('Toxic blowpipe', 'Charged'),
+          neck: findEquipment('Amulet of strength'),
+        },
+      }), monster);
+      const toxicBonuses = calculateEquipmentBonusesFromGear(getTestPlayer(monster, {
+        equipment: {
+          weapon: findEquipment('Toxic blowpipe', 'Charged'),
+          neck: findEquipment('Amulet of strength'),
+        },
+        leagues: {
+          six: {
+            effects: {
+              talent_thrown_weapon_accuracy: 60,
+              talent_thrown_weapon_melee_str_scale: 1,
+            },
+          },
+        },
+      }), monster);
+
+      expect(drygoreBonuses.offensive.ranged - drygoreBaseBonuses.offensive.ranged).toBe(
+        toxicBonuses.offensive.ranged - toxicBaseBonuses.offensive.ranged,
+      );
+      expect(drygoreBonuses.bonuses.ranged_str - drygoreBaseBonuses.bonuses.ranged_str).toBe(
+        toxicBonuses.bonuses.ranged_str - toxicBaseBonuses.bonuses.ranged_str,
+      );
+    });
+  });
 });

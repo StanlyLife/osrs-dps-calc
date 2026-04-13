@@ -243,6 +243,25 @@ export const getCanonicalEquipment = (inputEq: PlayerEquipment) => {
   return canonicalized;
 };
 
+export const isBowPactWeapon = (weapon?: EquipmentPiece | null): boolean => (
+  weapon?.category === EquipmentCategory.BOW && weapon.name !== 'Eclipse atlatl'
+);
+
+export const isCrossbowPactWeapon = (weapon?: EquipmentPiece | null): boolean => (
+  weapon?.category === EquipmentCategory.CROSSBOW
+);
+
+export const isThrownEquipmentPactWeapon = (weapon?: EquipmentPiece | null): boolean => (
+  weapon?.category === EquipmentCategory.THROWN
+  || weapon?.category === EquipmentCategory.CHINCHOMPA
+  || weapon?.name === 'Eclipse atlatl'
+);
+
+export const isThrownEchoPactWeapon = (weapon?: EquipmentPiece | null): boolean => (
+  weapon?.category === EquipmentCategory.THROWN
+  || weapon?.name === 'Eclipse atlatl'
+);
+
 /**
  * Calculates the player's attack speed using current stance and equipment.
  */
@@ -304,8 +323,7 @@ export const calculateAttackSpeed = (player: Player, monster: Monster): number =
   }
 
   if (effects.talent_bow_fast_hits
-    && player.equipment.weapon?.category === EquipmentCategory.BOW
-    && player.equipment.weapon?.name !== 'Eclipse atlatl') {
+    && isBowPactWeapon(player.equipment.weapon)) {
     attackSpeed -= 1;
   }
 
@@ -378,9 +396,7 @@ export const calculateEquipmentBonusesFromGear = (player: Player, monster: Monst
   const leagues = player.leagues.six.effects;
 
   if (leagues.talent_thrown_weapon_accuracy) {
-    const isWearingThrown = player.equipment.weapon?.category === EquipmentCategory.THROWN
-      || player.equipment.weapon?.category === EquipmentCategory.CHINCHOMPA
-      || player.equipment.weapon?.name === 'Eclipse atlatl';
+    const isWearingThrown = isThrownEquipmentPactWeapon(player.equipment.weapon);
     totals.offensive.ranged += isWearingThrown ? 60 : 0;
   }
 
@@ -458,9 +474,7 @@ export const calculateEquipmentBonusesFromGear = (player: Player, monster: Monst
   }
 
   const weapon = playerEquipment.weapon;
-  const isWearingThrown = weapon?.category === EquipmentCategory.THROWN
-    || weapon?.category === EquipmentCategory.CHINCHOMPA
-    || weapon?.name === 'Eclipse atlatl';
+  const isWearingThrown = isThrownEquipmentPactWeapon(weapon);
   if (leagues.talent_thrown_weapon_melee_str_scale && isWearingThrown) {
     totals.bonuses.ranged_str += Math.trunc(totals.bonuses.str * 0.80);
   }

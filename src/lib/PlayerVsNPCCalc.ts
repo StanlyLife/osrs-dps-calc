@@ -71,6 +71,9 @@ import {
   calculateAttackSpeed,
   calculateEquipmentBonusesFromGear,
   getCanonicalItem,
+  isBowPactWeapon,
+  isCrossbowPactWeapon,
+  isThrownEchoPactWeapon,
   WEAPON_SPEC_COSTS,
 } from '@/lib/Equipment';
 import BaseCalc, { CalcOpts, InternalOpts } from '@/lib/BaseCalc';
@@ -1477,7 +1480,7 @@ export default class PlayerVsNPCCalc extends BaseCalc {
     const leagues = this.player.leagues.six;
     if (this.opts.isEcho) {
       const meleeEcho = this.isUsingMeleeStyle() && leagues.effects.talent_2h_melee_echos && this.player.equipment.weapon?.isTwoHanded;
-      const isWearingThrown = meleeEcho || (this.player.equipment.weapon?.category === EquipmentCategory.THROWN || this.wearing('Eclipse atlatl'));
+      const isWearingThrown = meleeEcho || isThrownEchoPactWeapon(this.player.equipment.weapon);
       let echoDist = HitDistribution.linear(acc, min, max);
 
       if (leagues.effects.talent_thrown_maxhit_echoes && isWearingThrown) {
@@ -2203,8 +2206,8 @@ export default class PlayerVsNPCCalc extends BaseCalc {
     const rangedEcho = this.player.style.type === 'ranged' && leagues.effects.talent_ranged_regen_echo_chance;
     const meleeEcho = this.isUsingMeleeStyle() && leagues.effects.talent_2h_melee_echos && this.player.equipment.weapon?.isTwoHanded;
     if (rangedEcho || meleeEcho) {
-      const isWearingBow = meleeEcho || (this.player.equipment.weapon?.category === EquipmentCategory.BOW && !this.wearing('Eclipse atlatl'));
-      const isWearingCrossbow = meleeEcho || this.player.equipment.weapon?.category === EquipmentCategory.CROSSBOW;
+      const isWearingBow = meleeEcho || isBowPactWeapon(this.player.equipment.weapon);
+      const isWearingCrossbow = meleeEcho || isCrossbowPactWeapon(this.player.equipment.weapon);
 
       const regenChance = this.track(DetailKey.LEAGUES_ECHO_CHANCE_REGEN, meleeEcho ? 1 : (leagues.effects.talent_regen_ammo ?? 0) / 100);
       let echoChance = (meleeEcho ? 5 : leagues.effects.talent_ranged_regen_echo_chance!) / 100;
