@@ -28,7 +28,7 @@ const Changelog: React.FC = () => {
     <>
       <button
         type="button"
-        className="transition-all hover:scale-105 hover:text-white border border-body-500 bg-[#3e2816] py-1.5 px-2.5 rounded-md dark:bg-dark-300 dark:border-dark-200 md:flex items-center gap-1"
+        className="transition-all hover:scale-105 hover:text-white border border-body-500 bg-[#3e2816] py-1.5 px-2.5 rounded-md dark:bg-dark-300 dark:border-dark-200 flex items-center gap-1"
         onClick={() => setIsOpen(true)}
       >
         <IconNews size={20} aria-label="Changelog" />
@@ -40,115 +40,33 @@ const Changelog: React.FC = () => {
         title="Changelog"
       >
         <div className="text-sm bg-dark-500 rounded p-2 shadow-inner border border-dark-200 overflow-auto max-h-64">
-          <ChangelogEntry date="19 November 2024">
+          <ChangelogEntry date="14 April 2026">
             <li>
-              Increased maximum number of loadouts to 6, instead of 5.
+              Added side-tab loadout management with support for up to 10 loadouts, drag-to-reorder tabs, keyboard shortcuts from 1 to 0, and loadout badges that show equipped weapons and selected League regions.
             </li>
             <li>
-              Fixed issue where results table horizontal overflow wasn&apos;t working properly on mobile.
+              Added League region selection per loadout, persisted those regions through imports and shared state, and surfaced the chosen regions throughout the UI.
             </li>
             <li>
-              Added combat masteries for Raging Echoes League.
-            </li>
-          </ChangelogEntry>
-          <ChangelogEntry date="14 November 2024">
-            <li>
-              Added upcoming items for Raging Echoes League.
-            </li>
-          </ChangelogEntry>
-          <ChangelogEntry date="16 July 2024">
-            <li>
-              Fixed issue with burning claws spec calculation
+              Reworked the monster panel so you can add up to two comparison NPCs, configure each one separately, and reuse monster settings and defensive reductions across those comparison cards.
             </li>
             <li>
-              Added ability to select an attack phase for tormented demons
+              Simplified the results area into focused per-NPC tables, highlighted the best average TTK between loadouts, and removed the older hit-distribution, TTK graph, loadout-comparison, and NPC-vs-player result panels from the main flow.
             </li>
             <li>
-              Added input for tile distance (for chinchompas)
-            </li>
-          </ChangelogEntry>
-          <ChangelogEntry date="9 July 2024">
-            <li>
-              Implemented support for showing data on
-              {' '}
-              <span className="font-bold text-orange-300">special attacks</span>
-              {' '}
-              in the results panel - a highly requested community feature. We have support for 27 commonly used
-              special attacks for now, with more coming in the future.
+              Tuned several League-related combat calculations, including updated echo behavior handling and clearer per-loadout region context in the UI.
             </li>
             <li>
-              Added an expanded version of the results table which shows more information. Rolls are now hidden by
-              default.
+              Added Drygore blowpipe burn damage into DPS calculations and now warn when that burn is included in DPS but not yet reflected in TTK.
             </li>
             <li>
-              Added better support for different variants of blowpipes. Generating a share link that includes a
-              blowpipe will now correctly save which variant it is.
+              Improved stability around startup and recalculation by preventing duplicate initial loads, discarding stale worker responses safely, and avoiding runaway TTK work for infinite-health or very large minion scenarios.
             </li>
             <li>
-              TTK calculations across all loadouts are now performed in parallel in an attempt to speed up slower
-              computations.
+              Updated imports and defaults so comparison monsters persist correctly and the app now opens on Gemstone Crab as the default NPC.
             </li>
             <li>
-              Added extra visual changes to the UI, such as dotted underlines for results table headers to make it
-              clear that you can hover over them for a definition.
-            </li>
-            <li>
-              Handled Warriors&apos; Guild cyclopes being immune to combat styles which aren&apos;t melee.
-            </li>
-            <li>
-              Handled edge cases where negative max hits are not rounded up to 1.
-            </li>
-          </ChangelogEntry>
-          <ChangelogEntry date="17 June 2024">
-            <li>
-              Fixed a bug in Corporeal Beast calculation.
-            </li>
-            <li>
-              Fixed a bug with flat armour calculation.
-            </li>
-            <li>
-              Fixed a bug with salamander accuracy bonus and attack speed.
-            </li>
-            <li>
-              Added tonalztics of ralos to defensive reductions section of the monster panel.
-            </li>
-          </ChangelogEntry>
-          <ChangelogEntry date="7 June 2024">
-            <li>
-              Added the ability to create a custom monster by selecting it in the monster dropdown. This allows you to
-              edit the monster&apos;s stats, attributes, weakness, and more for all your theory-crafting needs.
-            </li>
-            <li>
-              Added this changelog!
-            </li>
-          </ChangelogEntry>
-          <ChangelogEntry date="5 June 2024">
-            <li>
-              Updated for this week&apos;s game update, including changing Flames of Zamorak to not count as a
-              fire spell.
-            </li>
-            <li>
-              Reworked ToA scaling.
-            </li>
-            <li>
-              Fixed bug with selecting a monster where the wrong health scaling would be used.
-            </li>
-            <li>
-              Added elder maul defence reduction.
-            </li>
-            <li>
-              Added handling for
-              {' '}
-              <a href="https://oldschool.runescape.wiki/w/Flat_armour" target="_blank">flat armour</a>
-              .
-            </li>
-          </ChangelogEntry>
-          <ChangelogEntry date="3 June 2024">
-            <li>
-              Corrected elemental damage with slayer helmet.
-            </li>
-            <li>
-              Fixed fire spells on ice demons.
+              Removed the RuneLite WikiSync import flow from the current UI and trimmed the top bar actions to match the new comparison-focused workflow.
             </li>
           </ChangelogEntry>
         </div>
