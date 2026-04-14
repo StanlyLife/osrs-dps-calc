@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStore } from '@/state';
 import Offensive from '@/app/components/player/bonuses/Offensive';
@@ -6,10 +6,12 @@ import Defensive from '@/app/components/player/bonuses/Defensive';
 import OtherBonuses from '@/app/components/player/bonuses/OtherBonuses';
 import { toJS } from 'mobx';
 import { calculateEquipmentBonusesFromGear } from '@/lib/Equipment';
+import { IconChevronDown, IconChevronUp } from '@tabler/icons-react';
 
 const Bonuses: React.FC = observer(() => {
   const store = useStore();
   const { manualMode } = store.prefs;
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const player = toJS(store.player);
   const monster = toJS(store.monster);
@@ -17,20 +19,34 @@ const Bonuses: React.FC = observer(() => {
 
   return (
     <div className="px-4 my-4">
-      <div className="flex justify-between items-center gap-2">
-        <h4 className="font-serif font-bold">Bonuses</h4>
-        {manualMode && (
-          <button type="button" className="text-xs underline" onClick={() => store.updateEquipmentBonuses()}>
-            Calculate from equipment
-          </button>
+      <div className="rounded bg-body-100 dark:bg-dark-500">
+        <button
+          type="button"
+          className={`w-full px-2 py-1 flex items-center justify-between gap-2 text-left ${isExpanded ? 'border-b border-b-body-400 dark:border-b-dark-300' : ''}`}
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          <span className="font-serif font-bold text-black dark:text-white">Bonuses</span>
+          <span className="text-gray-500 dark:text-gray-300">
+            {isExpanded ? <IconChevronUp width={20} /> : <IconChevronDown width={20} />}
+          </span>
+        </button>
+        {isExpanded && (
+          <div className="py-1">
+            <div className="flex justify-between items-center gap-2 px-1">
+              <div />
+              {manualMode && (
+                <button type="button" className="text-xs underline" onClick={() => store.updateEquipmentBonuses()}>
+                  Calculate from equipment
+                </button>
+              )}
+            </div>
+            <div className="flex gap-4 justify-center">
+              <Offensive computedStats={computedStats} />
+              <Defensive computedStats={computedStats} />
+              <OtherBonuses computedStats={computedStats} />
+            </div>
+          </div>
         )}
-      </div>
-      <div className="py-1">
-        <div className="flex gap-4 justify-center">
-          <Offensive computedStats={computedStats} />
-          <Defensive computedStats={computedStats} />
-          <OtherBonuses computedStats={computedStats} />
-        </div>
       </div>
     </div>
   );

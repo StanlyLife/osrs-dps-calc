@@ -59,7 +59,7 @@ const LoadoutName: React.FC<LoadoutNameProps> = ({ name, index, renameLoadout })
       <button
         type="button"
         onClick={onEdit}
-        className="disabled:cursor-not-allowed text-body-500 dark:text-dark-100 disabled:text-btns-100 dark:disabled:text-dark-500 hover:text-red transition-colors flex-none"
+        className="disabled:cursor-not-allowed text-body-500 dark:text-dark-100 disabled:text-btns-100 dark:disabled:text-dark-500 hover:text-red-300 transition-colors flex-none"
         data-tooltip-id="tooltip"
         data-tooltip-content="Rename loadout"
       >

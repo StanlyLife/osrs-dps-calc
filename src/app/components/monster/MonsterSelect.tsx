@@ -14,33 +14,54 @@ interface MonsterOption {
   monster: Partial<Monster>;
 }
 
-const MonsterSelect: React.FC = observer(() => {
+interface MonsterSelectProps {
+  id?: string;
+  placeholder?: string;
+  onSelectedMonsterChange?: (monster: Partial<Monster>) => void;
+  includeCustomMonster?: boolean;
+  excludedMonsters?: Array<Pick<Monster, 'id' | 'version'>>;
+}
+
+const MonsterSelect: React.FC<MonsterSelectProps> = observer((props) => {
   const store = useStore();
   const { availableMonsters } = store;
+  const {
+    id = 'monster-select',
+    placeholder = 'Search for monster...',
+    onSelectedMonsterChange,
+    includeCustomMonster = true,
+    excludedMonsters = [],
+  } = props;
+
+  const excludedMonsterKeys = useMemo(() => new Set(
+    excludedMonsters.map((monster) => `${monster.id}:${monster.version || ''}`),
+  ), [excludedMonsters]);
 
   const options: MonsterOption[] = useMemo(() => [
-    {
+    ...(includeCustomMonster ? [{
       label: 'Create custom monster',
       value: -1,
       version: '',
       monster: { ...CUSTOM_MONSTER_BASE },
-    },
-    ...availableMonsters.map((m, i) => ({
-      label: `${m.name}`,
-      value: i,
-      version: m.version || '',
-      monster: {
-        ...m,
-      },
-    })),
-  ], [availableMonsters]);
+    }] : []),
+    ...availableMonsters
+      .filter((monster) => !excludedMonsterKeys.has(`${monster.id}:${monster.version || ''}`))
+      .map((m, i) => ({
+        label: `${m.name}`,
+        value: i,
+        version: m.version || '',
+        monster: {
+          ...m,
+        },
+      })),
+  ], [availableMonsters, excludedMonsterKeys, includeCustomMonster]);
 
   return (
     <Combobox<MonsterOption>
-      id="monster-select"
+      id={id}
       className="w-full"
       items={options}
-      placeholder="Search for monster..."
+      placeholder={placeholder}
       resetAfterSelect
       blurAfterSelect
       customFilter={(items, iv) => {
@@ -50,7 +71,11 @@ const MonsterSelect: React.FC = observer(() => {
       }}
       onSelectedItemChange={(item) => {
         if (item) {
-          store.updateMonster(item.monster);
+          if (onSelectedMonsterChange) {
+            onSelectedMonsterChange(item.monster);
+          } else {
+            store.updateMonster(item.monster);
+          }
         }
       }}
       CustomItemComponent={({ item }) => {

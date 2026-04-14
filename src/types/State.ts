@@ -3,7 +3,6 @@ import { Player } from '@/types/Player';
 import { Monster } from '@/types/Monster';
 import UserIssueType from '@/enums/UserIssueType';
 import { DetailEntry } from '@/lib/CalcDetails';
-import { ChartEntry } from '@/types/Charts';
 
 export interface UserIssue {
   type: UserIssueType;
@@ -33,13 +32,7 @@ export interface UI {
 export interface Preferences {
   manualMode: boolean;
   rememberUsername: boolean;
-  showHitDistribution: boolean;
-  showLoadoutComparison: boolean;
-  showTtkComparison: boolean;
-  showNPCVersusPlayerResults: boolean;
-  hitDistsHideZeros: boolean; // legacy name
-  hitDistShowSpec: boolean;
-  resultsExpanded: boolean;
+  showEnemyComparisonResults: boolean;
 }
 
 /**
@@ -47,6 +40,11 @@ export interface Preferences {
  */
 export interface CalculatedLoadout {
   userIssues?: UserIssue[],
+}
+
+export interface ComparisonMonsterSlot {
+  id: number;
+  monster: Monster | null;
 }
 
 export interface PlayerVsNPCCalculatedLoadout extends CalculatedLoadout {
@@ -61,15 +59,12 @@ export interface PlayerVsNPCCalculatedLoadout extends CalculatedLoadout {
   accuracy?: number,
   dps?: number,
   ttk?: number,
-  hitDist?: ChartEntry[],
-  ttkDist?: Map<number, number>,
 
   specAccuracy?: number,
   specMaxHit?: number,
   specExpected?: number,
   specMomentDps?: number,
   specFullDps?: number,
-  specHitDist?: ChartEntry[],
 }
 
 // NPC vs Player metrics
@@ -109,6 +104,7 @@ export interface ImportableData {
   selectedLoadout: number;
 
   monster: Monster;
+  comparisonMonsterSlots?: ComparisonMonsterSlot[];
 }
 
 /**
@@ -119,6 +115,7 @@ export interface State extends ImportableData {
   ui: UI;
   prefs: Preferences;
   calc: Calculator;
+  comparisonMonsterSlots: ComparisonMonsterSlot[];
 
   /**
    * All monsters that a player can fight.

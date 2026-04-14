@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useStore } from '@/state';
 import { useSearchParams } from 'next/navigation';
 import localforage from 'localforage';
@@ -16,6 +16,7 @@ const InitialLoad: React.FC = observer(() => {
   const store = useStore();
   const searchParams = useSearchParams();
   const [loaded, setLoaded] = useState(false);
+  const started = useRef(false);
 
   useEffect(() => {
     const doFirstLoad = async () => {
@@ -60,7 +61,8 @@ const InitialLoad: React.FC = observer(() => {
       setLoaded(true);
     };
 
-    if (loaded) return;
+    if (loaded || started.current) return;
+    started.current = true;
     doFirstLoad();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);

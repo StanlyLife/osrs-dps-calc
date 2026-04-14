@@ -80,10 +80,26 @@ export interface EquipmentStats {
   defensive: PlayerDefensive,
 }
 
+export type LeagueRegion =
+  | 'varlamore'
+  | 'karamja'
+  | 'asgarnia'
+  | 'fremennik'
+  | 'kandarin'
+  | 'desert'
+  | 'morytania'
+  | 'tirannwn'
+  | 'wilderness'
+  | 'kourend';
+
 export interface LeaguesState {
   selectedNodeIds: Set<string>;
 
   effects: { [k in LeaguesEffect]?: number };
+
+  regions: LeagueRegion[];
+
+  bowHitStacks: number;
 
   minionEnabled: boolean;
 

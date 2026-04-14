@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { useStore } from '@/state';
 import { NPCVsPlayerCalculatedLoadout } from '@/types/State';
 import Spinner from '@/app/components/Spinner';
+import LoadoutTabLabel from '@/app/components/LoadoutTabLabel';
 import { ACCURACY_PRECISION, DPS_PRECISION } from '@/lib/constants';
 import { max, min } from 'd3-array';
 import { toJS } from 'mobx';
@@ -66,14 +67,16 @@ const NPCVersusPlayerResultsTable: React.FC = observer(() => {
       <thead>
         <tr>
           <th aria-label="blank" className="bg-btns-400 border-r dark:bg-dark-500 select-none" />
-          {store.loadouts.map(({ name }, i) => (
+          {store.loadouts.map((loadout, i) => (
             <th
             // eslint-disable-next-line react/no-array-index-key
               key={i}
               className={`text-center w-28 border-r py-1.5 font-bold font-serif leading-tight text-xs cursor-pointer transition-colors ${selectedLoadout === i ? 'bg-orange-400 dark:bg-orange-700' : 'bg-btns-400 dark:bg-dark-500'}`}
               onClick={() => store.setSelectedLoadout(i)}
+              aria-label={`Select loadout ${loadout.name || i + 1}`}
+              title={loadout.name || `Loadout ${i + 1}`}
             >
-              {name}
+              <LoadoutTabLabel loadout={loadout} fallbackLabel={`${i + 1}`} showLabel labelClassName="w-20 text-[11px] leading-tight" regionBadgePlacement="left" />
             </th>
           ))}
         </tr>

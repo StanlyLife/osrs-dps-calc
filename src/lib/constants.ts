@@ -10,7 +10,7 @@ export const BLOWPIPE_IDS: number[] = [
 ];
 
 // The maximum number of loadouts that users can have. Do not lower it, else it will cause share link issues.
-export const NUMBER_OF_LOADOUTS = 6;
+export const NUMBER_OF_LOADOUTS = 10;
 
 export const AKKHA_IDS = [
   11789, 11790, 11791, 11792, 11793, 11794, 11795, 11796,
@@ -545,6 +545,33 @@ export const INFINITE_HEALTH_MONSTERS: number[] = [
 ];
 
 export const ECLIPSE_MOON_IDS = [13012];
+
+export const COMBAT_SPELL_AIR_RUNE_COST: { [spell: string]: number } = {
+  'Wind Strike': 1,
+  'Water Strike': 1,
+  'Earth Strike': 2,
+  'Fire Strike': 2,
+  'Wind Bolt': 2,
+  'Water Bolt': 2,
+  'Earth Bolt': 3,
+  'Fire Bolt': 3,
+  'Wind Blast': 3,
+  'Water Blast': 3,
+  'Earth Blast': 4,
+  'Fire Blast': 4,
+  'Wind Wave': 5,
+  'Water Wave': 5,
+  'Earth Wave': 6,
+  'Fire Wave': 7,
+  'Wind Surge': 7,
+  'Water Surge': 7,
+  'Earth Surge': 10,
+  'Fire Surge': 10,
+  'Smoke Rush': 1,
+  'Smoke Burst': 2,
+  'Smoke Blitz': 2,
+  'Smoke Barrage': 4,
+};
 
 export const COMBAT_SPELL_FIRE_RUNE_COST: { [spell: string]: number } = {
   'Fire Strike': 3,

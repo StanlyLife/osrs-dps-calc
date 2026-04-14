@@ -28,6 +28,16 @@ export class CalcWorker {
 
   private sequenceIds: { [k in WorkerRequestType ]?: number } = {};
 
+  private rejectPendingPromises(message: string) {
+    for (const type of Object.values(WorkerRequestType)) {
+      const pending = this.pendingPromises[type as WorkerRequestType];
+      if (pending) {
+        pending.reject(new Error(message));
+        this.pendingPromises[type as WorkerRequestType] = undefined;
+      }
+    }
+  }
+
   constructor() {
     this.id = CalcWorker.SELF_ID;
     CalcWorker.SELF_ID += 1;
@@ -39,7 +49,6 @@ export class CalcWorker {
 
   public initWorker() {
     if (!this.worker) {
-      console.debug(`[CalcWorker ${this.id}] Init`);
       this.worker = new Worker(new URL('./worker.ts', import.meta.url));
       this.worker.onmessage = (ev: MessageEvent<string>) => this.onResponse(ev);
     }
@@ -49,6 +58,7 @@ export class CalcWorker {
     if (this.worker) {
       const w = this.worker;
       this.worker = undefined;
+      this.rejectPendingPromises('worker was shutdown before the request completed');
       w.terminate();
     }
   }
@@ -74,11 +84,11 @@ export class CalcWorker {
 
     // deferred promise so that we can invoke the callback in onResponse
     const deferred = new DeferredPromise<Resp>();
+    this.pendingPromises[req.type]?.reject(new Error(`request was superseded by a newer ${WorkerRequestType[req.type]} request`));
     this.pendingPromises[req.type] = deferred;
 
     const payload = JSON.stringify(req, WORKER_JSON_REPLACER);
     this.worker.postMessage(payload);
-    console.debug(`[CalcWorker ${this.id}] OUTBOUND ${req.sequenceId} ${WorkerRequestType[req.type]} | ${payload}`);
 
     return deferred.promise;
   }
@@ -86,12 +96,10 @@ export class CalcWorker {
   private onResponse(e: MessageEvent<string>) {
     const data = JSON.parse(e.data, WORKER_JSON_REVIVER) as CalcResponsesUnion;
     const { type, sequenceId, error } = data;
-    console.debug(`[CalcWorker ${this.id}] INBOUND ${sequenceId} ${WorkerRequestType[data.type]} | ${e.data}`);
 
     const expectedSeqId = this.sequenceIds[type];
     if (sequenceId !== expectedSeqId) {
       // another request has been sent off before this one returned
-      console.debug(`[CalcWorker ${this.id}] Ignoring response ${sequenceId} as stale`);
       return;
     }
 
@@ -131,3 +139,14 @@ export const CalcProvider: React.FC<{ children: React.ReactNode }> = ({ children
 };
 
 export const useCalc = () => useContext(CalcContext);
+
+export const useIndependentCalc = () => {
+  const [worker] = useState<CalcWorker>(new CalcWorker());
+
+  useEffect(() => {
+    worker.initWorker();
+    return () => worker.shutdown();
+  }, [worker]);
+
+  return worker;
+};

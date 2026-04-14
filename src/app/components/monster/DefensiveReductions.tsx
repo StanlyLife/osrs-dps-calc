@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { IconChevronDown, IconChevronUp } from '@tabler/icons-react';
 import NumberInput from '@/app/components/generic/NumberInput';
 import Toggle from '@/app/components/generic/Toggle';
+import { PartialDeep } from 'type-fest';
 import vuln from '@/public/img/def_reductions/Vulnerability.png';
 import bgs from '@/public/img/def_reductions/Bandos_godsword.webp';
 import sceptre from '@/public/img/def_reductions/Accursed sceptre.png';
@@ -16,11 +17,21 @@ import { observer } from 'mobx-react-lite';
 import { useStore } from '@/state';
 import { getDefenceFloor } from '@/lib/scaling/DefenceReduction';
 import { toJS } from 'mobx';
+import { Monster } from '@/types/Monster';
 
-const DefensiveReductions: React.FC = observer(() => {
+interface DefensiveReductionsProps {
+  monster?: Monster;
+  isExpanded?: boolean;
+  onExpandedChange?: (expanded: boolean) => void;
+  updateMonster?: (monster: PartialDeep<Monster>) => void;
+}
+
+const DefensiveReductions: React.FC<DefensiveReductionsProps> = observer((props) => {
   const store = useStore();
-  const { isDefensiveReductionsExpanded } = store.ui;
-  const { monster } = store;
+  const { monster = store.monster } = props;
+  const isDefensiveReductionsExpanded = props.isExpanded ?? store.ui.isDefensiveReductionsExpanded;
+  const setExpanded = props.onExpandedChange ?? ((expanded: boolean) => store.updateUIState({ isDefensiveReductionsExpanded: expanded }));
+  const updateMonster = props.updateMonster ?? store.updateMonster;
   const { defenceReductions } = monster.inputs;
 
   const monsterJs = toJS(monster);
@@ -31,7 +42,7 @@ const DefensiveReductions: React.FC = observer(() => {
       <button
         type="button"
         className={`w-full pt-1 border-b-body-400 dark:border-b-dark-300 px-2 flex text-gray-500 dark:text-gray-300 font-semibold justify-between gap-2 ${isDefensiveReductionsExpanded ? 'border-b' : ''}`}
-        onClick={() => store.updateUIState({ isDefensiveReductionsExpanded: !isDefensiveReductionsExpanded })}
+        onClick={() => setExpanded(!isDefensiveReductionsExpanded)}
       >
         <div>
           Defensive Reductions
@@ -57,7 +68,7 @@ const DefensiveReductions: React.FC = observer(() => {
               required
               min={0}
               value={defenceReductions.elderMaul}
-              onChange={(v) => store.updateMonster({ inputs: { defenceReductions: { elderMaul: v } } })}
+              onChange={(v) => updateMonster({ inputs: { defenceReductions: { elderMaul: v } } })}
             />
             <span className="pl-2">
               <img src={elderMaul.src} width={18} className="inline-block" alt="" />
@@ -71,7 +82,7 @@ const DefensiveReductions: React.FC = observer(() => {
               required
               min={0}
               value={defenceReductions.dwh}
-              onChange={(v) => store.updateMonster({ inputs: { defenceReductions: { dwh: v } } })}
+              onChange={(v) => updateMonster({ inputs: { defenceReductions: { dwh: v } } })}
             />
             <span className="pl-2">
               <img src={dwh.src} width={18} className="inline-block" alt="" />
@@ -85,7 +96,7 @@ const DefensiveReductions: React.FC = observer(() => {
               required
               min={0}
               value={defenceReductions.arclight}
-              onChange={(v) => store.updateMonster({ inputs: { defenceReductions: { arclight: v } } })}
+              onChange={(v) => updateMonster({ inputs: { defenceReductions: { arclight: v } } })}
             />
             <span className="pl-2">
               <img src={arc.src} width={18} className="inline-block" alt="" />
@@ -99,7 +110,7 @@ const DefensiveReductions: React.FC = observer(() => {
               required
               min={0}
               value={defenceReductions.emberlight}
-              onChange={(v) => store.updateMonster({ inputs: { defenceReductions: { emberlight: v } } })}
+              onChange={(v) => updateMonster({ inputs: { defenceReductions: { emberlight: v } } })}
             />
             <span className="pl-2">
               <img src={emberlight.src} width={18} className="inline-block" alt="" />
@@ -113,7 +124,7 @@ const DefensiveReductions: React.FC = observer(() => {
               required
               min={0}
               value={defenceReductions.tonalztic}
-              onChange={(v) => store.updateMonster({ inputs: { defenceReductions: { tonalztic: v } } })}
+              onChange={(v) => updateMonster({ inputs: { defenceReductions: { tonalztic: v } } })}
             />
             <span className="pl-2">
               <img src={tonalztic.src} width={18} className="inline-block" alt="" />
@@ -127,7 +138,7 @@ const DefensiveReductions: React.FC = observer(() => {
               required
               min={0}
               value={defenceReductions.bgs}
-              onChange={(v) => store.updateMonster({ inputs: { defenceReductions: { bgs: v } } })}
+              onChange={(v) => updateMonster({ inputs: { defenceReductions: { bgs: v } } })}
             />
             <span className="pl-2">
               <img src={bgs.src} width={18} className="inline-block" alt="" />
@@ -141,7 +152,7 @@ const DefensiveReductions: React.FC = observer(() => {
               required
               min={0}
               value={defenceReductions.seercull}
-              onChange={(v) => store.updateMonster({ inputs: { defenceReductions: { seercull: v } } })}
+              onChange={(v) => updateMonster({ inputs: { defenceReductions: { seercull: v } } })}
             />
             <span className="pl-2">
               <img src={seercull.src} width={18} className="inline-block" alt="" />
@@ -155,7 +166,7 @@ const DefensiveReductions: React.FC = observer(() => {
               required
               min={0}
               value={defenceReductions.ayak}
-              onChange={(v) => store.updateMonster({ inputs: { defenceReductions: { ayak: v } } })}
+              onChange={(v) => updateMonster({ inputs: { defenceReductions: { ayak: v } } })}
             />
             <span className="pl-2">
               <img src={ayak.src} width={18} className="inline-block" alt="" />
@@ -166,7 +177,7 @@ const DefensiveReductions: React.FC = observer(() => {
           <Toggle
             className="mt-1"
             checked={defenceReductions.accursed}
-            setChecked={(c) => store.updateMonster({ inputs: { defenceReductions: { accursed: c } } })}
+            setChecked={(c) => updateMonster({ inputs: { defenceReductions: { accursed: c } } })}
             label={(
               <>
                 <img src={sceptre.src} width={18} className="inline-block" alt="" />
@@ -177,7 +188,7 @@ const DefensiveReductions: React.FC = observer(() => {
           />
           <Toggle
             checked={defenceReductions.vulnerability}
-            setChecked={(c) => store.updateMonster({ inputs: { defenceReductions: { vulnerability: c } } })}
+            setChecked={(c) => updateMonster({ inputs: { defenceReductions: { vulnerability: c } } })}
             label={(
               <>
                 <img src={vuln.src} width={18} className="inline-block" alt="" />

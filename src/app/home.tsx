@@ -3,7 +3,11 @@
 import type { NextPage } from 'next';
 import MonsterContainer from '@/app/components/monster/MonsterContainer';
 import { Tooltip } from 'react-tooltip';
-import React, { Suspense, useEffect } from 'react';
+import React, {
+  Suspense,
+  useEffect,
+  useMemo,
+} from 'react';
 import { observer } from 'mobx-react-lite';
 import { useStore } from '@/state';
 import { ToastContainer } from 'react-toastify';
@@ -11,23 +15,72 @@ import PlayerContainer from '@/app/components/player/PlayerContainer';
 import PlayerVsNPCResultsContainer from '@/app/components/results/PlayerVsNPCResultsContainer';
 import { IReactionPublic, reaction, toJS } from 'mobx';
 import InitialLoad from '@/app/components/InitialLoad';
-import LoadoutComparison from '@/app/components/results/LoadoutComparison';
-import TtkComparison from '@/app/components/results/TtkComparison';
 import ShareModal from '@/app/components/ShareModal';
 import DebugPanels from '@/app/components/results/DebugPanels';
 import { IconAlertTriangle } from '@tabler/icons-react';
-import NPCVersusPlayerResultsContainer from '@/app/components/results/NPCVersusPlayerResultsContainer';
-import { CalcProvider, useCalc } from '@/worker/CalcWorker';
+import { useCalc } from '@/worker/CalcWorker';
+import { NUMBER_OF_LOADOUTS } from '@/lib/constants';
+import { Monster } from '@/types/Monster';
+
+const isExpectedCalcWorkerError = (error: unknown): boolean => error instanceof Error
+  && (
+    error.message.includes('superseded by a newer')
+    || error.message.includes('worker was shutdown')
+  );
+
+const LOADOUT_SHORTCUT_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'] as const;
+
+const getMonsterKey = (monster: Pick<Monster, 'id' | 'version'>) => `${monster.id}:${monster.version || ''}`;
 
 const Home: NextPage = observer(() => {
   const calc = useCalc();
   const store = useStore();
-  store.debug = process.env && process.env.NODE_ENV === 'development';
+  const debugEnabled = process.env.NEXT_PUBLIC_ENABLE_DEBUG === 'true';
+
+  const comparisonMonsters = useMemo(
+    () => store.comparisonMonsterSlots.flatMap((slot) => (slot.monster ? [slot.monster] : [])),
+    [store.comparisonMonsterSlots],
+  );
+
+  useEffect(() => {
+    if (store.debug !== debugEnabled) {
+      store.debug = debugEnabled;
+    }
+  }, [debugEnabled, store]);
+
+  useEffect(() => {
+    const primaryMonsterKey = getMonsterKey(store.monster);
+    let didChange = false;
+    const seen = new Set<string>([primaryMonsterKey]);
+    const normalizedSlots = store.comparisonMonsterSlots.map((slot) => {
+      if (!slot.monster) {
+        return slot;
+      }
+
+      const monsterKey = getMonsterKey(slot.monster);
+      if (seen.has(monsterKey)) {
+        didChange = true;
+        return {
+          ...slot,
+          monster: null,
+        };
+      }
+
+      seen.add(monsterKey);
+      return slot;
+    });
+
+    if (didChange) {
+      store.setComparisonMonsterSlots(normalizedSlots);
+    }
+  }, [store, store.comparisonMonsterSlots, store.monster]);
 
   useEffect(() => {
     store.setCalcWorker(calc);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const canAddComparisonMonster = store.comparisonMonsterSlots.length < 2;
 
   const globalKeyDownHandler = (e: KeyboardEvent) => {
     // We only handle events that occur outside <input>, <textarea>, etc
@@ -36,22 +89,13 @@ const Home: NextPage = observer(() => {
     // Ignore if any modifier keys are held (to not interfere with browser/system shortcuts)
     if (e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return;
 
-    switch (e.key) {
-      case '1':
-      case '2':
-      case '3':
-      case '4':
-      case '5':
-      case '6': {
-        // Handle quickly switching between loadouts (max 6)
-        const key = parseInt(e.key) - 1;
-        if (store.loadouts[key] !== undefined) {
-          store.setSelectedLoadout(key);
-        }
-        break;
+    if (LOADOUT_SHORTCUT_KEYS.includes(e.key as typeof LOADOUT_SHORTCUT_KEYS[number])) {
+      const shortcutIndex = e.key === '0' ? 9 : Number(e.key) - 1;
+      if (shortcutIndex < NUMBER_OF_LOADOUTS && store.loadouts[shortcutIndex] !== undefined) {
+        store.setSelectedLoadout(shortcutIndex);
       }
-      default:
-        return;
+    } else {
+      return;
     }
 
     // If we get here, we've handled the event, so prevent it bubbling
@@ -74,16 +118,17 @@ const Home: NextPage = observer(() => {
   useEffect(() => {
     const recompute = () => {
       store.doWorkerRecompute()
-        .catch(console.error);
+        .catch((error) => {
+          if (!isExpectedCalcWorkerError(error)) {
+            console.error(error);
+          }
+        });
     };
 
     // When a calculator input changes, trigger a re-compute on the worker
     const triggers: ((r: IReactionPublic) => unknown)[] = [
       () => toJS(store.loadouts),
       () => toJS(store.monster),
-      () => store.prefs.showTtkComparison,
-      () => store.prefs.showNPCVersusPlayerResults,
-      () => store.prefs.hitDistsHideZeros,
     ];
     const reactions = triggers.map((t) => reaction(t, recompute, { fireImmediately: true }));
 
@@ -111,21 +156,22 @@ const Home: NextPage = observer(() => {
         <InitialLoad />
       </Suspense>
       {/* Main container */}
-      <div className="max-w-[1420px] mx-auto mt-4 md:mb-8">
-        <div className="flex gap-2 flex-wrap justify-center">
-          <PlayerContainer />
-          <MonsterContainer />
-          <PlayerVsNPCResultsContainer />
+      <div className="max-w-[1420px] mx-auto mt-4 px-4 pl-16 sm:pl-20 md:mb-8">
+        <div className="flex gap-2 flex-wrap lg:flex-nowrap justify-center items-start">
+          <div className="flex w-full flex-col gap-2 lg:w-[350px] lg:flex-none">
+            <PlayerContainer />
+            <MonsterContainer
+              comparisonMonsterSlots={store.comparisonMonsterSlots}
+              canAddComparisonMonster={canAddComparisonMonster}
+              onAddComparisonMonster={store.addComparisonMonsterSlot}
+              onRemoveComparisonMonster={store.removeComparisonMonsterSlot}
+              onUpdateComparisonMonster={store.updateComparisonMonsterSlot}
+            />
+          </div>
+          <PlayerVsNPCResultsContainer comparisonMonsters={comparisonMonsters} />
         </div>
       </div>
-      {/* Additional graphs and stuff */}
-      <div className="max-w-[1420px] mx-auto mb-8">
-        {/* LoadoutComparison requires its own calc context */}
-        <CalcProvider>
-          <LoadoutComparison />
-        </CalcProvider>
-        <TtkComparison />
-        <NPCVersusPlayerResultsContainer />
+      <div className="max-w-[1420px] mx-auto mb-8 px-4 pl-16 sm:pl-20">
         <DebugPanels />
       </div>
       <Tooltip id="tooltip" />
