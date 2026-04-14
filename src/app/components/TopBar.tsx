@@ -12,16 +12,16 @@ const TopBar: React.FC = observer(() => {
     <div className="mx-auto px-3 sm:px-6 lg:px-8 bg-btns-400 dark:bg-dark-500 shadow border-b-4 border-body-500 dark:border-dark-200">
       <div className="relative flex items-center justify-between h-16">
         <div className="flex-1 flex items-center justify-between">
-          <div className="flex-shrink-0 flex items-center gap-2 select-none">
+          <div className="flex-shrink-0 flex items-center gap-1 sm:gap-2 select-none min-w-0">
             <a target="_blank" href="https://oldschool.runescape.wiki">
-              <img src={wiki.src} className="w-12" alt="OSRS Wiki" />
+              <img src={wiki.src} className="w-8 sm:w-12" alt="OSRS Wiki" />
             </a>
-            <h1 className="font-bold font-serif text-white">DPS Calculator</h1>
-            <span className="text-sm text-white px-1 py-0.5 bg-orange-700 rounded [text-shadow:_0_1px_0_rgb(0_0_0_/_30%)] lowercase">
+            <h1 className="font-bold font-serif text-white text-sm sm:text-base whitespace-nowrap">DPS Calculator</h1>
+            <span className="hidden sm:inline text-sm text-white px-1 py-0.5 bg-orange-700 rounded [text-shadow:_0_1px_0_rgb(0_0_0_/_30%)] lowercase">
               Leagues tuned
             </span>
           </div>
-          <div className="block ml-6">
+          <div className="block ml-2 sm:ml-6">
             <div className="flex text-body-200 text-xs font-medium space-x-2">
               <Changelog />
               <button

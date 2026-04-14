@@ -97,6 +97,7 @@ import { burningClawDoT, burningClawSpec, dClawDist } from '@/lib/dists/claws';
 
 const PARTIALLY_IMPLEMENTED_SPECS: string[] = [
   'Ancient godsword',
+  'Fang of the hound', // Instant reset not supported, proc is.
 ];
 
 // https://oldschool.runescape.wiki/w/Category:Weapons_with_Special_attacks
@@ -142,6 +143,8 @@ const MAX_TTK_STATE_ENTRIES = 10_000_000;
  */
 export default class PlayerVsNPCCalc extends BaseCalc {
   private memoizedDist?: AttackDistribution;
+
+  private neededEchoes: [acc: number, min: number, max: number][] = [];
 
   constructor(player: Player, monster: Monster, opts: Partial<CalcOpts> = {}) {
     super(player, monster, opts);
@@ -984,7 +987,7 @@ export default class PlayerVsNPCCalc extends BaseCalc {
     }
 
     if (this.player.leagues.six.effects.talent_crossbow_slow_big_hits
-      && this.player.equipment.weapon?.category === 'Crossbow') {
+      && this.player.equipment.weapon?.category === EquipmentCategory.CROSSBOW) {
       maxHit = this.trackFactor(DetailKey.LEAGUES_CROSSBOW_SLOW_BIG_HITS, maxHit, [170, 100]);
     }
 
@@ -1579,7 +1582,7 @@ export default class PlayerVsNPCCalc extends BaseCalc {
     );
 
     if (this.player.leagues.six.effects.talent_crossbow_double_accuracy_roll
-      && this.player.equipment.weapon?.category === 'Crossbow'
+      && this.player.equipment.weapon?.category === EquipmentCategory.CROSSBOW
       && !this.opts.isEcho) {
       hitChance = this.track(
         DetailKey.LEAGUES_CROSSBOW_DOUBLE_ACCURACY,
@@ -1770,9 +1773,11 @@ export default class PlayerVsNPCCalc extends BaseCalc {
     const standardHitDist = HitDistribution.linear(acc, min, max);
     let dist = new AttackDistribution([standardHitDist]);
     this.trackDist(DetailKey.DIST_BASE, dist);
+    this.neededEchoes = [[acc, min, max]];
 
     // Monsters that always die in one hit no matter what
     if (ONE_HIT_MONSTERS.includes(this.monster.id)) {
+      this.neededEchoes = [[acc, max, max]];
       return new AttackDistribution([
         HitDistribution.single(1.0, [new Hitsplat(this.monster.skills.hp)]),
       ]);
@@ -1785,7 +1790,7 @@ export default class PlayerVsNPCCalc extends BaseCalc {
     }
 
     if (leagues.effects.talent_crossbow_max_hit
-        && this.player.equipment.weapon?.category === 'Crossbow') {
+        && this.player.equipment.weapon?.category === EquipmentCategory.CROSSBOW) {
       dist = new AttackDistribution([HitDistribution.single(acc, [new Hitsplat(max)])]);
     }
 
@@ -1941,9 +1946,11 @@ export default class PlayerVsNPCCalc extends BaseCalc {
 
     if (this.isUsingMeleeStyle() && this.isWearingScythe()) {
       const hits: HitDistribution[] = [];
+      this.neededEchoes = [];
       for (let i = 0; i < Math.min(Math.max(this.monster.size, 1), 3); i++) {
         const splatMax = Math.trunc(max / (2 ** i));
         hits.push(HitDistribution.linear(acc, min, Math.max(min, splatMax)));
+        this.neededEchoes.push([acc, min, Math.max(min, splatMax)]);
       }
       dist = new AttackDistribution(hits);
     }
@@ -1961,6 +1968,7 @@ export default class PlayerVsNPCCalc extends BaseCalc {
           return new HitDistribution([new WeightedHit(1.0, [h, Hitsplat.INACCURATE])]);
         },
       );
+      this.neededEchoes = [[acc, min, Math.max(min, firstMax)], [acc, min, Math.max(min, secondMax)]];
     }
 
     if (this.isUsingMeleeStyle() && this.isWearingTwoHitWeapon()) {
@@ -1970,6 +1978,7 @@ export default class PlayerVsNPCCalc extends BaseCalc {
         HitDistribution.linear(acc, min, Math.max(min, firstMax)),
         HitDistribution.linear(acc, min, Math.max(min, secondMax)),
       ]);
+      this.neededEchoes = [[acc, min, Math.max(min, firstMax)], [acc, min, Math.max(min, secondMax)]];
     }
 
     if (this.isUsingMeleeStyle() && this.isWearingKeris() && mattrs.includes(MonsterAttribute.KALPHITE)) {
@@ -2081,7 +2090,7 @@ export default class PlayerVsNPCCalc extends BaseCalc {
       kandarinDiary: this.player.buffs.kandarinDiary,
       monster: this.monster,
     };
-    if (this.player.style.type === 'ranged' && this.player.equipment.weapon?.name.includes('rossbow')) {
+    if (this.player.style.type === 'ranged' && this.player.equipment.weapon?.category === EquipmentCategory.CROSSBOW) {
       if (this.wearing(['Opal bolts (e)', 'Opal dragon bolts (e)'])) {
         dist = dist.transform(opalBolts(boltContext));
       } else if (this.wearing(['Pearl bolts (e)', 'Pearl dragon bolts (e)'])) {
@@ -2160,8 +2169,7 @@ export default class PlayerVsNPCCalc extends BaseCalc {
       dist = dist.transform(divisionTransformer(2));
     }
 
-    if (this.player.style.type === 'ranged'
-      && (this.player.equipment.weapon?.name.includes('rossbow') || this.wearing("King's barrage"))) {
+    if (this.player.style.type === 'ranged' && this.player.equipment.weapon?.category === EquipmentCategory.CROSSBOW) {
       const currentHp = this.player.skills.hp + this.player.boosts.hp;
       if (this.wearing(['Ruby bolts (e)', 'Ruby dragon bolts (e)']) && currentHp >= 10) {
         dist = dist.transform(rubyBolts(boltContext));
@@ -2411,14 +2419,15 @@ export default class PlayerVsNPCCalc extends BaseCalc {
   private applyLeaguesPostProcessing(npcDist: AttackDistribution): AttackDistribution {
     const acc = this.getHitChance();
     const [min, max] = this.getMinAndMax();
-
     const leagues = this.player.leagues.six;
     const blindbagUniques = this.getBlindbagUniques();
     if (leagues.effects.talent_free_random_weapon_attack_chance
       && this.isUsingMeleeStyle()
       && !this.opts.usingSpecialAttack
       && blindbagUniques >= 1
-      && (this.player.equipment.weapon?.weight ?? 0) >= 1) {
+      && (this.player.equipment.weapon?.weight ?? 0) >= 1
+      && !this.opts.isBlindBag
+      && !this.opts.isEcho) {
       let chanceBlindbagProc = leagues.effects.talent_free_random_weapon_attack_chance / 100;
       if (leagues.effects.talent_unique_blindbag_chance) {
         chanceBlindbagProc += (0.02 * blindbagUniques);
@@ -2471,7 +2480,7 @@ export default class PlayerVsNPCCalc extends BaseCalc {
 
     const rangedEcho = this.player.style.type === 'ranged' && leagues.effects.talent_ranged_regen_echo_chance;
     const meleeEcho = this.isUsingMeleeStyle() && leagues.effects.talent_2h_melee_echos && this.player.equipment.weapon?.isTwoHanded;
-    if (rangedEcho || meleeEcho) {
+    if ((rangedEcho || meleeEcho) && !this.opts.isEcho) {
       const isWearingBow = meleeEcho || isDemonicPactsBowWeapon(this.player.equipment.weapon);
       const isWearingCrossbow = meleeEcho || this.player.equipment.weapon?.category === EquipmentCategory.CROSSBOW;
       const isWearingThrown = meleeEcho || isDemonicPactsThrownWeapon(this.player.equipment.weapon);
@@ -2641,6 +2650,9 @@ export default class PlayerVsNPCCalc extends BaseCalc {
   public getHtk() {
     const dist = this.getDistribution();
     const hist = dist.asHistogram();
+    if (hist === undefined || hist[0] === undefined || hist[0].value === undefined) {
+      throw Error('empty hist1');
+    }
     const startHp = this.monster.inputs.monsterCurrentHp;
     const max = Math.min(startHp, dist.getMax());
     if (max === 0) {
@@ -2929,7 +2941,7 @@ export default class PlayerVsNPCCalc extends BaseCalc {
     // a special case for optimization, ruby bolts only change dps under 500 hp
     // so for high health targets, avoid recomputing dist until then
     if (this.player.style.type === 'ranged'
-      && this.player.equipment.weapon?.name.includes('rossbow')
+      && this.player.equipment.weapon?.category === EquipmentCategory.CROSSBOW
       && ['Ruby bolts (e)', 'Ruby dragon bolts (e)'].includes(this.player.equipment.ammo?.name || '')
       && this.monster.inputs.monsterCurrentHp >= 500
       && hp >= 500) {
@@ -2981,7 +2993,9 @@ export default class PlayerVsNPCCalc extends BaseCalc {
     if (monster.name === 'Vardorvis') {
       return true;
     }
-    if (loadout.equipment.weapon?.name.includes('rossbow') && this.wearing(['Ruby bolts (e)', 'Ruby dragon bolts (e)'])) {
+    if (this.player.style.type === 'ranged'
+      && loadout.equipment.weapon?.category === EquipmentCategory.CROSSBOW
+      && this.wearing(['Ruby bolts (e)', 'Ruby dragon bolts (e)'])) {
       return true;
     }
     if (this.wearing('Keris partisan of the sun') && TOMBS_OF_AMASCUT_MONSTER_IDS.includes(monster.id)) {

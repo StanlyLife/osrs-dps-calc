@@ -581,7 +581,7 @@ const MonsterContainer: React.FC<MonsterContainerProps> = observer((props) => {
   }), [displayMonster, isCustomMonster, monster, phaseOptions, store.updateMonster]);
 
   return (
-    <div className="w-full md:w-[350px] flex flex-col">
+    <div className="w-full max-w-[350px] flex flex-col">
       <div
         className="bg-tile dark:bg-dark-300 sm:rounded-lg text-black dark:text-white shadow-lg"
       >

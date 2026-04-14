@@ -105,7 +105,8 @@ input.form-control[type=number] {
 }
 
 .equipment-select-menu {
-  width: 350px !important;
+  width: 100% !important;
+  max-width: 350px !important;
 }
 
 .btn {

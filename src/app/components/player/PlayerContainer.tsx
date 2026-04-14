@@ -120,15 +120,15 @@ const PlayerContainer: React.FC = observer(() => {
   }, [draggedLoadoutIndex, reorderLoadouts]);
 
   return (
-    <div className="w-[350px]">
-      <div className="fixed left-0 top-1/2 z-20 flex max-h-[calc(100vh-32px)] -translate-y-1/2 flex-col gap-1.5 overflow-y-auto pr-2 select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+    <div className="w-full max-w-[350px]">
+      <div className="fixed left-0 top-1/2 z-20 flex max-h-[calc(100vh-32px)] -translate-y-1/2 flex-col gap-1.5 overflow-y-auto pr-1 sm:pr-2 select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         {loadouts.map((l, ix) => (
           <button
             type="button"
             // eslint-disable-next-line react/no-array-index-key
             key={ix}
             className={classNames(
-              'flex h-10 w-12 cursor-grab touch-none items-center justify-center rounded-r-xl border border-l-0 border-body-100 shadow-sm transition-all active:cursor-grabbing dark:border-dark-300',
+              'flex h-8 w-10 sm:h-10 sm:w-12 cursor-grab touch-none items-center justify-center rounded-r-xl border border-l-0 border-body-100 shadow-sm transition-all active:cursor-grabbing dark:border-dark-300',
               draggedLoadoutIndex === ix ? 'opacity-40' : '',
               dropTargetIndex === ix
                 ? 'translate-x-1 ring-2 ring-orange-300 dark:ring-orange-600'
@@ -182,7 +182,7 @@ const PlayerContainer: React.FC = observer(() => {
           type="button"
           disabled={!canCreateLoadout}
           onClick={() => createLoadout(true, selectedLoadout)}
-          className="flex h-10 w-12 items-center justify-center rounded-r-xl border border-l-0 border-body-100 bg-btns-400 text-body-500 shadow-sm transition-colors hover:text-green-300 disabled:cursor-not-allowed disabled:text-body-200 dark:border-dark-300 dark:bg-dark-400 dark:text-dark-100 dark:hover:bg-dark-500 dark:disabled:text-dark-500"
+          className="flex h-8 w-10 sm:h-10 sm:w-12 items-center justify-center rounded-r-xl border border-l-0 border-body-100 bg-btns-400 text-body-500 shadow-sm transition-colors hover:text-green-300 disabled:cursor-not-allowed disabled:text-body-200 dark:border-dark-300 dark:bg-dark-400 dark:text-dark-100 dark:hover:bg-dark-500 dark:disabled:text-dark-500"
           data-tooltip-id="tooltip"
           data-tooltip-content="Add new loadout"
         >

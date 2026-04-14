@@ -156,9 +156,9 @@ const Home: NextPage = observer(() => {
         <InitialLoad />
       </Suspense>
       {/* Main container */}
-      <div className="max-w-[1420px] mx-auto mt-4 px-4 pl-16 sm:pl-20 md:mb-8">
+      <div className="max-w-[1420px] mx-auto mt-4 px-2 pl-14 sm:px-4 sm:pl-16 md:pl-20 md:mb-8">
         <div className="flex gap-2 flex-wrap lg:flex-nowrap justify-center items-start">
-          <div className="flex w-full flex-col gap-2 lg:w-[350px] lg:flex-none">
+          <div className="flex w-full flex-col gap-2 lg:max-w-[350px] lg:flex-none">
             <PlayerContainer />
             <MonsterContainer
               comparisonMonsterSlots={store.comparisonMonsterSlots}
@@ -171,7 +171,7 @@ const Home: NextPage = observer(() => {
           <PlayerVsNPCResultsContainer comparisonMonsters={comparisonMonsters} />
         </div>
       </div>
-      <div className="max-w-[1420px] mx-auto mb-8 px-4 pl-16 sm:pl-20">
+      <div className="max-w-[1420px] mx-auto mb-8 px-2 pl-14 sm:px-4 sm:pl-16 md:pl-20">
         <DebugPanels />
       </div>
       <Tooltip id="tooltip" />

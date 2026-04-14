@@ -349,11 +349,8 @@ class GlobalState implements State {
         boosts.def = leagueDef;
       }
 
-      const leagueMagicBoost = Math.min(
-        this.player.leagues.six.regenerateMagicBonus ?? 0,
-        10,
-      );
-      boosts.magic = (boosts.magic ?? 0) + leagueMagicBoost;
+  const leagueMagicBoost = Math.min(this.player.leagues.six.regenerateMagicBonus ?? 0, 10);
+  boosts.magic = Math.max(boosts.magic ?? 0, leagueMagicBoost);
 
       this.updatePlayer({ boosts });
     };

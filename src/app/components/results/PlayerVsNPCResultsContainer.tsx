@@ -18,7 +18,7 @@ const ResultsContainer: React.FC<ResultsContainerProps> = observer((props) => {
   const loadoutResults = toJS(store.calc.loadouts);
 
   return (
-    <div className="grow basis-1/4 flex flex-col gap-2">
+    <div className="grow basis-1/4 min-w-0 flex flex-col gap-2">
       <div
         className="sm:rounded shadow-lg bg-tile dark:bg-dark-300"
       >
