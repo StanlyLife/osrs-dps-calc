@@ -819,6 +819,9 @@ export default class BaseCalc {
     ) {
       this.addIssue(UserIssueType.EQUIPMENT_SET_EFFECT_UNSUPPORTED, 'The calculator currently does not account for your equipment set effect.');
     }
+    if (this.wearing('Drygore blowpipe') && this.player.equipment.weapon?.version === 'Charged' && !this.isImmuneToNormalBurns()) {
+      this.addIssue(UserIssueType.WEAPON_EFFECT_PARTIALLY_SUPPORTED, 'This weapon\'s burn effect is included in DPS but not TTK.');
+    }
     if (this.wearing('Ring of recoil') || this.wearing('Ring of suffering (i)') || this.wearing('Ring of suffering')) {
       this.addIssue(UserIssueType.RING_RECOIL_UNSUPPORTED, 'The calculator does not account for recoil damage.');
     }

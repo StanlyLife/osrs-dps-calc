@@ -7,6 +7,7 @@ import {
   getTestMonster,
   getTestPlayer,
 } from '@/tests/utils/TestUtils';
+import { INFINITE_HEALTH_MONSTERS } from '@/lib/constants';
 
 const getMinionDpt = (calc: PlayerVsNPCCalc): number => calc.getDpt() - calc.getExpectedDamage() / calc.getExpectedAttackSpeed();
 
@@ -124,5 +125,26 @@ describe('Minion', () => {
     );
 
     expect(getMinionDpt(boltCalc)).toBeCloseTo(getMinionDpt(neutralCalc));
+  });
+
+  test('does not try to compute ttk for infinite-health monsters', () => {
+    const m = getTestMonster('Gemstone Crab', '', {
+      id: INFINITE_HEALTH_MONSTERS[0],
+    });
+    const p = getTestPlayer(m, {
+      equipment: {
+        weapon: findEquipment('Bronze dagger'),
+      },
+      leagues: {
+        six: {
+          minionEnabled: true,
+          minionZamorakItemCount: 0,
+        },
+      },
+    });
+
+    const calc = new PlayerVsNPCCalc(p, m);
+
+    expect(calc.getTtk()).toBeUndefined();
   });
 });

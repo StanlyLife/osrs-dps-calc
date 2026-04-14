@@ -24,12 +24,13 @@ import {
   spellByName,
   Spellement,
 } from '@/types/Spell';
-import { PrayerData, PrayerMap } from '@/enums/Prayer';
+import { Prayer, PrayerData, PrayerMap } from '@/enums/Prayer';
 import { isVampyre, MonsterAttribute } from '@/enums/MonsterAttribute';
 import {
   ABYSSAL_SIRE_TRANSITION_IDS,
   ALWAYS_MAX_HIT_MONSTERS,
   BA_ATTACKER_MONSTERS,
+  COMBAT_SPELL_AIR_RUNE_COST,
   DOOM_OF_MOKHAIOTL_IDS,
   ECLIPSE_MOON_IDS,
   COMBAT_SPELL_FIRE_RUNE_COST,
@@ -43,6 +44,7 @@ import {
   IMMUNE_TO_MELEE_DAMAGE_NPC_IDS,
   IMMUNE_TO_NON_SALAMANDER_MELEE_DAMAGE_NPC_IDS,
   IMMUNE_TO_RANGED_DAMAGE_NPC_IDS,
+  INFINITE_HEALTH_MONSTERS,
   KEPHRI_OVERLORD_IDS,
   NIGHTMARE_TOTEM_IDS,
   OLM_HEAD_IDS,
@@ -71,6 +73,8 @@ import {
   calculateAttackSpeed,
   calculateEquipmentBonusesFromGear,
   getCanonicalItem,
+  isDemonicPactsBowWeapon,
+  isDemonicPactsThrownWeapon,
   WEAPON_SPEC_COSTS,
 } from '@/lib/Equipment';
 import BaseCalc, { CalcOpts, InternalOpts } from '@/lib/BaseCalc';
@@ -88,6 +92,7 @@ import {
   pearlBolts,
   rubyBolts,
 } from '@/lib/dists/bolts';
+import { getExpectedBurn } from '@/lib/Burn';
 import { burningClawDoT, burningClawSpec, dClawDist } from '@/lib/dists/claws';
 
 const PARTIALLY_IMPLEMENTED_SPECS: string[] = [
@@ -130,6 +135,7 @@ const MINION_MIN_HIT = 3;
 const MINION_BASE_MAX_HIT = 10;
 const MINION_MAX_HIT_PER_ZAMORAK_ITEM = 2;
 const MINION_MAX_ZAMORAK_ITEMS = 5;
+const MAX_TTK_STATE_ENTRIES = 10_000_000;
 
 /**
  * Class for computing various player-vs-NPC metrics.
@@ -1300,6 +1306,93 @@ export default class PlayerVsNPCCalc extends BaseCalc {
     return prayers.filter((p) => p[filter]);
   }
 
+  private getEnemyProtectionPrayerDamageFactor(styleType: CombatStyleType): Factor | null {
+    const enemyPrayers = this.player.leagues.six.enemyPrayers;
+    let active = false;
+
+    if (styleType === 'ranged') {
+      active = enemyPrayers.ranged;
+    } else if (styleType === 'magic') {
+      active = enemyPrayers.magic;
+    } else {
+      active = enemyPrayers.melee;
+    }
+
+    if (!active) {
+      return null;
+    }
+
+    const penetration = Math.min(this.player.leagues.six.effects.talent_prayer_pen_all ?? 0, 100);
+    return [penetration, 100];
+  }
+
+  private getCombatSpellRegeneratedResourceCount(resource: 'air' | 'fire'): number {
+    const leagues = this.player.leagues.six;
+    const weaponIsPoweredStaff = this.player.equipment.weapon?.category === EquipmentCategory.POWERED_STAFF
+      && this.player.style.stance !== 'Manual Cast';
+
+    if (this.player.spell) {
+      const spellRuneCost = resource === 'air'
+        ? COMBAT_SPELL_AIR_RUNE_COST[this.player.spell.name]
+        : COMBAT_SPELL_FIRE_RUNE_COST[this.player.spell.name];
+
+      return spellRuneCost ?? 0;
+    }
+
+    if (resource === 'air' && weaponIsPoweredStaff && leagues.effects.talent_regen_stave_charges_air) {
+      return 1;
+    }
+
+    if (resource === 'fire' && weaponIsPoweredStaff && leagues.effects.talent_regen_stave_charges_fire) {
+      return 1;
+    }
+
+    return 0;
+  }
+
+  private hasActiveProtectionPrayer(): boolean {
+    return this.player.prayers.includes(Prayer.PROTECT_MAGIC)
+      || this.player.prayers.includes(Prayer.PROTECT_MELEE)
+      || this.player.prayers.includes(Prayer.PROTECT_RANGED);
+  }
+
+  private getPrayerRestoreUnitsPerTick(drainResistance: number): number {
+    const effects = this.player.leagues.six.effects;
+    let restoreUnitsPerTick = 0;
+
+    if (effects.talent_prayer_restore_no_overhead && !this.hasActiveProtectionPrayer()) {
+      const restoreInterval = Math.max(1, 15 - Math.trunc(this.player.bonuses.prayer / 7));
+      restoreUnitsPerTick += drainResistance / restoreInterval;
+    }
+
+    const regenChance = (effects.talent_regen_ammo ?? 0) / 100;
+    const prayerRestoreChance = (effects.talent_airrune_regen_prayer_restore ?? 0) / 100;
+    const airRunesRegeneratedPerProc = this.getCombatSpellRegeneratedResourceCount('air');
+    const expectedAttackSpeed = this.getExpectedAttackSpeed();
+    if (airRunesRegeneratedPerProc > 0 && regenChance > 0 && prayerRestoreChance > 0 && expectedAttackSpeed > 0) {
+      const expectedPrayerRestoredPerAttack = airRunesRegeneratedPerProc * regenChance * prayerRestoreChance;
+      restoreUnitsPerTick += (expectedPrayerRestoredPerAttack * drainResistance) / expectedAttackSpeed;
+    }
+
+    return restoreUnitsPerTick;
+  }
+
+  private getBowRepeatHitBonus(baseMaxHit: number): number {
+    if (this.player.style.type !== 'ranged' || !isDemonicPactsBowWeapon(this.player.equipment.weapon)) {
+      return 0;
+    }
+
+    const effects = this.player.leagues.six.effects;
+    if (!effects.talent_bow_min_hit_stacking_increase && !effects.talent_bow_max_hit_stacking_increase) {
+      return 0;
+    }
+
+    const currentStacks = Math.max(this.player.leagues.six.bowHitStacks ?? 0, 0);
+    const maxBonus = Math.trunc(baseMaxHit * 15 / 100);
+
+    return Math.min(currentStacks, maxBonus);
+  }
+
   /**
    * Get the min and max hit for this loadout, which is based on the player's current combat style.
    * Don't use this for player-facing values! Use `getMax()`
@@ -1324,6 +1417,16 @@ export default class PlayerVsNPCCalc extends BaseCalc {
     }
     if (style === 'magic') {
       minMax = this.getPlayerMaxMagicHit();
+    }
+
+    const bowRepeatHitBonus = this.getBowRepeatHitBonus(minMax[1]);
+    if (bowRepeatHitBonus > 0) {
+      if (this.player.leagues.six.effects.talent_bow_min_hit_stacking_increase) {
+        minMax[0] = this.trackAdd('Leagues bow repeat-hit min bonus', minMax[0], bowRepeatHitBonus);
+      }
+      if (this.player.leagues.six.effects.talent_bow_max_hit_stacking_increase) {
+        minMax[1] = this.trackAdd('Leagues bow repeat-hit max bonus', minMax[1], bowRepeatHitBonus);
+      }
     }
 
     if (minMax[0] > minMax[1]) {
@@ -1513,7 +1616,14 @@ export default class PlayerVsNPCCalc extends BaseCalc {
 
   public getDoTExpected(): number {
     let ret: number = 0;
-    if (this.opts.usingSpecialAttack) {
+    if (this.wearing('Drygore blowpipe') && this.player.equipment.weapon?.version === 'Charged' && !this.isImmuneToNormalBurns()) {
+      ret = getExpectedBurn(this.getHitChance(), this.getAttackSpeed(), 0.25);
+    } else if (this.player.leagues.six.effects.talent_fire_spell_burn_bounce
+      && this.player.style.type === 'magic'
+      && this.getSpellement() === 'fire'
+      && !this.isImmuneToNormalBurns()) {
+      ret = getExpectedBurn(this.getHitChance(), this.getAttackSpeed(), 1.0);
+    } else if (this.opts.usingSpecialAttack) {
       if (this.wearing(['Bone claws', 'Burning claws']) && !this.isImmuneToNormalBurns()) {
         ret = burningClawDoT(this.getHitChance());
       } else if (this.wearing('Scorching bow') && !this.isImmuneToNormalBurns()) {
@@ -1598,6 +1708,11 @@ export default class PlayerVsNPCCalc extends BaseCalc {
       npcDist = this.applyLeaguesPostProcessing(npcDist);
     }
 
+    const enemyPrayerDamageFactor = this.getEnemyProtectionPrayerDamageFactor(styleType);
+    if (enemyPrayerDamageFactor) {
+      npcDist = npcDist.transform(multiplyTransformer(...enemyPrayerDamageFactor), { transformInaccurate: false });
+    }
+
     if (process.env.NEXT_PUBLIC_HIT_DIST_SANITY_CHECK) {
       npcDist.dists.forEach((hitDist, ix) => {
         const sumAccuracy = sum(hitDist.hits, (wh) => wh.probability);
@@ -1623,20 +1738,32 @@ export default class PlayerVsNPCCalc extends BaseCalc {
 
     const leagues = this.player.leagues.six;
     if (this.opts.isEcho) {
-      const meleeEcho = this.isUsingMeleeStyle() && leagues.effects.talent_2h_melee_echos && this.player.equipment.weapon?.isTwoHanded;
-      const isWearingThrown = meleeEcho || (this.player.equipment.weapon?.category === EquipmentCategory.THROWN || this.wearing('Eclipse atlatl'));
-      let echoDist = HitDistribution.linear(acc, min, max);
+      const standardEchoHit = HitDistribution.linear(acc, min, max);
+      let echoDist = new AttackDistribution([standardEchoHit]);
 
-      if (leagues.effects.talent_thrown_maxhit_echoes && isWearingThrown) {
-        const effectChance = 0.2;
-        echoDist = echoDist.scaleProbability(1 - effectChance);
-        echoDist.addHit(new WeightedHit(effectChance * acc, [new Hitsplat(max)]));
-        echoDist.addHit(new WeightedHit(effectChance * (1 - acc), [Hitsplat.INACCURATE]));
+      if (style === 'ranged' && this.wearing('Dark bow')) {
+        echoDist = new AttackDistribution([standardEchoHit, standardEchoHit]);
       }
-      this.trackDist(DetailKey.DIST_LEAGUES_ECHO, echoDist);
+
+      if (this.isUsingMeleeStyle() && this.isWearingScythe()) {
+        const hits: HitDistribution[] = [];
+        for (let i = 0; i < Math.min(Math.max(this.monster.size, 1), 3); i++) {
+          const splatMax = Math.trunc(max / (2 ** i));
+          hits.push(HitDistribution.linear(acc, min, Math.max(min, splatMax)));
+        }
+        echoDist = new AttackDistribution(hits);
+      } else if (this.isUsingMeleeStyle() && this.isWearingTwoHitWeapon()) {
+        const firstMax = Math.trunc(max / 2);
+        const secondMax = max - firstMax;
+        echoDist = new AttackDistribution([
+          HitDistribution.linear(acc, min, Math.max(min, firstMax)),
+          HitDistribution.linear(acc, min, Math.max(min, secondMax)),
+        ]);
+      }
+      this.trackDist(DetailKey.DIST_LEAGUES_ECHO, echoDist.singleHitsplat);
 
       // echoes don't trigger any other effects, break early
-      return new AttackDistribution([echoDist]);
+      return echoDist;
     }
 
     // standard linear
@@ -1989,15 +2116,7 @@ export default class PlayerVsNPCCalc extends BaseCalc {
     }
 
     if (leagues.effects.talent_firerune_regen_damage_boost) {
-      const regeneratingWithStaff = this.player.equipment.weapon?.category === EquipmentCategory.POWERED_STAFF
-        && this.player.style.stance !== 'Manual Cast'
-        && leagues.effects.talent_regen_stave_charges_fire;
-      let fireRunesUsed = 0;
-      if (this.player.spell) {
-        fireRunesUsed = COMBAT_SPELL_FIRE_RUNE_COST[this.player.spell.name] ?? 0;
-      } else if (regeneratingWithStaff) {
-        fireRunesUsed = 1;
-      }
+      const fireRunesUsed = this.getCombatSpellRegeneratedResourceCount('fire');
 
       let regenChance = (leagues.effects.talent_regen_ammo ?? 0) / 100;
       if (fireRunesUsed > 0 && regenChance > 0) {
@@ -2353,15 +2472,20 @@ export default class PlayerVsNPCCalc extends BaseCalc {
     const rangedEcho = this.player.style.type === 'ranged' && leagues.effects.talent_ranged_regen_echo_chance;
     const meleeEcho = this.isUsingMeleeStyle() && leagues.effects.talent_2h_melee_echos && this.player.equipment.weapon?.isTwoHanded;
     if (rangedEcho || meleeEcho) {
-      const isWearingBow = meleeEcho || (this.player.equipment.weapon?.category === EquipmentCategory.BOW && !this.wearing('Eclipse atlatl'));
+      const isWearingBow = meleeEcho || isDemonicPactsBowWeapon(this.player.equipment.weapon);
       const isWearingCrossbow = meleeEcho || this.player.equipment.weapon?.category === EquipmentCategory.CROSSBOW;
+      const isWearingThrown = meleeEcho || isDemonicPactsThrownWeapon(this.player.equipment.weapon);
 
-      const regenChance = this.track(DetailKey.LEAGUES_ECHO_CHANCE_REGEN, meleeEcho ? acc : (leagues.effects.talent_regen_ammo ?? 0) / 100);
-      let echoChance = meleeEcho ? 0.05 : (leagues.effects.talent_ranged_regen_echo_chance! / 100);
+      let triggerChance = meleeEcho ? 0.05 : (leagues.effects.talent_ranged_regen_echo_chance! / 100);
       if (leagues.effects.talent_crossbow_echo_reproc_chance && isWearingCrossbow) {
-        echoChance += leagues.effects.talent_crossbow_echo_reproc_chance / 100;
+        triggerChance += leagues.effects.talent_crossbow_echo_reproc_chance / 100;
       }
-      this.track(DetailKey.LEAGUES_ECHO_CHANCE_TRIGGER, echoChance);
+      this.track(DetailKey.LEAGUES_ECHO_CHANCE_TRIGGER, triggerChance);
+
+      const regenChance = this.track(
+        DetailKey.LEAGUES_ECHO_CHANCE_REGEN,
+        rangedEcho ? (leagues.effects.talent_regen_ammo ?? 0) / 100 : 1,
+      );
 
       const alwaysAccurate = leagues.effects.talent_bow_always_pass_accuracy && isWearingBow;
       const echoAcc = this.track(DetailKey.LEAGUES_ECHO_ACCURACY, alwaysAccurate ? 1 : acc);
@@ -2378,15 +2502,27 @@ export default class PlayerVsNPCCalc extends BaseCalc {
           overrides: { accuracy: echoAcc, maxHit: [min, max] },
         },
       );
-      let echoDist = this.trackDist(DetailKey.DIST_LEAGUES_ECHO, echoSubCalc.getDistribution().dists[0]);
+      let echoDist = echoSubCalc.getDistribution().singleHitsplat;
 
-      const combinedEchoHappeningChance = echoChance * regenChance;
+      if (leagues.effects.talent_thrown_maxhit_echoes && isWearingThrown) {
+        const effectChance = 0.2;
+        const maxEchoHit = echoDist.getMax();
+        echoDist = new HitDistribution(
+          echoDist.hits.flatMap((hit) => ([
+            new WeightedHit(hit.probability * (1 - effectChance), hit.hitsplats),
+            new WeightedHit(hit.probability * effectChance, [hit.anyAccurate() ? new Hitsplat(maxEchoHit) : Hitsplat.INACCURATE]),
+          ])),
+        ).flatten();
+      }
+      this.trackDist(DetailKey.DIST_LEAGUES_ECHO, echoDist);
+
+      const combinedEchoHappeningChance = triggerChance * regenChance;
       echoDist = echoDist.scaleProbability(combinedEchoHappeningChance);
       echoDist.addHit(new WeightedHit(1 - combinedEchoHappeningChance, [Hitsplat.INACCURATE]));
       npcDist.addDist(echoDist);
 
       if (leagues.effects.talent_ranged_echo_cyclical) {
-        const cyclicChance = this.track(DetailKey.LEAGUES_ECHO_CHANCE_CYCLICAL, echoChance / 2);
+        const cyclicChance = this.track(DetailKey.LEAGUES_ECHO_CHANCE_CYCLICAL, 0.5);
         const echoDistCyclical = echoDist.scaleProbability(cyclicChance);
         echoDistCyclical.addHit(new WeightedHit(1 - cyclicChance, [Hitsplat.INACCURATE]));
         this.trackDist(DetailKey.DIST_LEAGUES_ECHO_CYCLICAL, echoDistCyclical);
@@ -2480,9 +2616,15 @@ export default class PlayerVsNPCCalc extends BaseCalc {
     }
 
     const drainResistance = 2 * this.player.bonuses.prayer + 60;
+    const prayerRestoreUnitsPerTick = this.getPrayerRestoreUnitsPerTick(drainResistance);
+    const netDrain = drain - prayerRestoreUnitsPerTick;
+    if (netDrain <= 0) {
+      return Infinity;
+    }
+
     const totalPrayerUnits = this.player.skills.prayer * drainResistance;
 
-    return Math.ceil(totalPrayerUnits / drain);
+    return Math.ceil(totalPrayerUnits / netDrain);
   }
 
   /**
@@ -2525,9 +2667,33 @@ export default class PlayerVsNPCCalc extends BaseCalc {
   /**
    * Returns the average time-to-kill (in seconds) calculation.
    */
-  public getTtk() {
+  public getTtk(): number | undefined {
+    const startHp = this.monster.inputs.monsterCurrentHp || this.monster.skills.hp;
+
+    if (INFINITE_HEALTH_MONSTERS.includes(this.monster.id)) {
+      return undefined;
+    }
+
     if (this.player.leagues.six.minionEnabled) {
-      return sum(Array.from(this.getTtkDistribution().entries()), ([ticks, probability]) => ticks * probability) * SECONDS_PER_TICK;
+      const dpt = this.getDpt();
+      if (dpt === 0) {
+        return 0;
+      }
+
+      const estimatedStateEntries = ((TTK_DIST_MAX_ITER_ROUNDS * this.getAttackSpeed()) + 20) * (startHp + 1);
+      if (estimatedStateEntries > MAX_TTK_STATE_ENTRIES) {
+        return startHp * SECONDS_PER_TICK / dpt;
+      }
+
+      try {
+        return sum(Array.from(this.getTtkDistribution().entries()), ([ticks, probability]) => ticks * probability) * SECONDS_PER_TICK;
+      } catch (error: unknown) {
+        if (error instanceof RangeError && error.message.includes('Array buffer allocation failed')) {
+          return startHp * SECONDS_PER_TICK / dpt;
+        }
+
+        throw error;
+      }
     }
 
     return this.getHtk() * this.getExpectedAttackSpeed() * SECONDS_PER_TICK;
@@ -2586,6 +2752,8 @@ export default class PlayerVsNPCCalc extends BaseCalc {
       return new Map<number, number>();
     }
 
+    const startHp = this.monster.inputs.monsterCurrentHp || this.monster.skills.hp;
+
     // todo thralls, iterMax = ... * max(speed, thrall_speed) // or don't maybe also
     const speed = this.getAttackSpeed();
     const iterMax = TTK_DIST_MAX_ITER_ROUNDS * speed;
@@ -2606,11 +2774,11 @@ export default class PlayerVsNPCCalc extends BaseCalc {
     // const tickHps = range(0, iterMax + 1).map(() => new Float64Array(this.monster.skills.hp + 1));
     // distribution of health values at current iter step
     const h = iterMax + 20;
-    const w = this.monster.skills.hp + 1;
+    const w = startHp + 1;
     const tickHpsRoot = new Float64Array(h * w);
     const tickHps = range(0, h)
       .map((i) => tickHpsRoot.subarray(w * i, w * (i + 1)));
-    tickHps[1][this.monster.inputs.monsterCurrentHp || this.monster.skills.hp] = 1.0;
+    tickHps[1][startHp] = 1.0;
 
     // output map, will be converted at the end
     const ttks = new Map<number, number>();
@@ -2620,10 +2788,10 @@ export default class PlayerVsNPCCalc extends BaseCalc {
 
     // if the hit dist depends on hp, we'll have to recalculate it each time, so cache the results to not repeat work
     const recalcDistOnHp = this.distIsCurrentHpDependent(this.player, this.monster);
-    const hpHitDists = new Array<DelayedHit[]>(this.monster.skills.hp + 1);
-    hpHitDists[this.monster.skills.hp] = playerDist;
+    const hpHitDists = new Array<DelayedHit[]>(startHp + 1);
+    hpHitDists[startHp] = playerDist;
     if (recalcDistOnHp) {
-      for (let hp = 0; hp <= this.monster.skills.hp; hp++) {
+      for (let hp = 0; hp <= startHp; hp++) {
         hpHitDists[hp] = this.distAtHp(playerDist, hp);
       }
     }
@@ -2631,11 +2799,11 @@ export default class PlayerVsNPCCalc extends BaseCalc {
     const minionHits = this.getMinionDelayedHits();
     if (minionHits.length > 0) {
       const minionStateHeight = iterMax + 20;
-      const minionStateWidth = this.monster.skills.hp + 1;
+      const minionStateWidth = startHp + 1;
       const minionTickHpsRoot = new Float64Array(minionStateHeight * minionStateWidth);
       const minionTickHps = range(0, minionStateHeight)
         .map((i) => minionTickHpsRoot.subarray(minionStateWidth * i, minionStateWidth * (i + 1)));
-      minionTickHps[1][this.monster.inputs.monsterCurrentHp || this.monster.skills.hp] = 1.0;
+      minionTickHps[1][startHp] = 1.0;
 
       const minionTtks = new Map<number, number>();
       let minionEpsilon = 1.0;

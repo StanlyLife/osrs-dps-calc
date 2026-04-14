@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import {
-  calculatePlayerVsNpc, findEquipmentById,
+  calculatePlayerVsNpc, findEquipment, findEquipmentById,
   getTestMonster,
   getTestPlayer,
 } from '@/tests/utils/TestUtils';
@@ -64,6 +64,94 @@ describe('Prayers', () => {
       });
       const { details } = calculatePlayerVsNpc(monster, player);
       expect(details.find((d) => d.label === DetailKey.DAMAGE_LEVEL_PRAYER)?.value).toBe(103);
+    });
+  });
+
+  describe('buffed ranged prayers', () => {
+    const basePlayer: PartialDeep<Player> = {
+      prayers: [Prayer.EAGLE_EYE],
+      equipment: {
+        weapon: findEquipmentById(21902),
+        ammo: findEquipmentById(21905),
+      },
+      style: {
+        name: 'Rapid',
+        type: 'ranged',
+        stance: 'Rapid',
+      },
+      skills: {
+        ranged: 99,
+      },
+    };
+
+    test('increases ranged prayer-derived levels', () => {
+      const baseDetails = calculatePlayerVsNpc(monster, getTestPlayer(monster, basePlayer)).details;
+      const buffedDetails = calculatePlayerVsNpc(monster, getTestPlayer(monster, {
+        ...basePlayer,
+        leagues: {
+          six: {
+            effects: {
+              talent_buffed_ranged_prayers: 1,
+            },
+          },
+        },
+      })).details;
+
+      expect(baseDetails.find((d) => d.label === DetailKey.PLAYER_ACCURACY_LEVEL_PRAYER)?.value).toBe(113);
+      expect(baseDetails.find((d) => d.label === DetailKey.DAMAGE_LEVEL_PRAYER)?.value).toBe(113);
+      expect(buffedDetails.find((d) => d.label === DetailKey.PLAYER_ACCURACY_LEVEL_PRAYER)?.value).toBe(117);
+      expect(buffedDetails.find((d) => d.label === DetailKey.DAMAGE_LEVEL_PRAYER)?.value).toBe(117);
+    });
+  });
+
+  describe('enemy protection prayers', () => {
+    const basePlayer: PartialDeep<Player> = {
+      equipment: {
+        cape: findEquipment("Dizana's quiver", 'Charged'),
+        weapon: findEquipment('Twisted bow'),
+        ammo: findEquipment('Dragon arrow', 'Unpoisoned'),
+      },
+      style: {
+        name: 'Rapid',
+        type: 'ranged',
+        stance: 'Rapid',
+      },
+      skills: {
+        ranged: 99,
+      },
+    };
+
+    test('prayer penetration lets ranged damage pass through ranged protection prayers', () => {
+      const unprotected = calculatePlayerVsNpc(monster, getTestPlayer(monster, basePlayer));
+      const protectedTarget = calculatePlayerVsNpc(monster, getTestPlayer(monster, {
+        ...basePlayer,
+        leagues: {
+          six: {
+            enemyPrayers: {
+              ranged: true,
+            },
+          },
+        },
+      }));
+      const penetratedTarget = calculatePlayerVsNpc(monster, getTestPlayer(monster, {
+        ...basePlayer,
+        leagues: {
+          six: {
+            enemyPrayers: {
+              ranged: true,
+            },
+            effects: {
+              talent_prayer_pen_all: 15,
+            },
+          },
+        },
+      }));
+
+      expect(unprotected.maxHit).toBeGreaterThan(0);
+      expect(protectedTarget.maxHit).toBe(0);
+      expect(protectedTarget.dps).toBe(0);
+      expect(penetratedTarget.maxHit).toBe(Math.trunc(unprotected.maxHit * 0.15));
+      expect(penetratedTarget.dps).toBeGreaterThan(0);
     });
   });
 });

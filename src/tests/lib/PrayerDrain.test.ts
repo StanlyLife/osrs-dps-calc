@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import PlayerVsNPCCalc from '@/lib/PlayerVsNPCCalc';
-import { getTestMonster, getTestPlayer } from '@/tests/utils/TestUtils';
+import { findSpell, getTestMonster, getTestPlayer } from '@/tests/utils/TestUtils';
 import { Prayer } from '@/enums/Prayer';
 
 describe('getPrayerTicks', () => {
@@ -66,5 +66,79 @@ describe('getPrayerTicks', () => {
 
     expect(calc.getPrayerTicks()).toBe(372);
     expect(calc.getPrayerDuration()).toBeCloseTo(223.2);
+  });
+
+  test('demonic pact no-overhead prayer restore extends duration', () => {
+    const m = getTestMonster('Abyssal demon', 'Standard');
+    const p = getTestPlayer(m, {
+      bonuses: {
+        prayer: 14,
+      },
+      prayers: [
+        Prayer.PIETY,
+      ],
+      leagues: {
+        six: {
+          effects: {
+            talent_prayer_restore_no_overhead: 1,
+          },
+        },
+      },
+    });
+    const calc = new PlayerVsNPCCalc(p, m);
+
+    expect(calc.getPrayerTicks()).toBe(506);
+    expect(calc.getPrayerDuration()).toBeCloseTo(303.6);
+  });
+
+  test('demonic pact no-overhead prayer restore does not apply with protection prayers active', () => {
+    const m = getTestMonster('Abyssal demon', 'Standard');
+    const p = getTestPlayer(m, {
+      bonuses: {
+        prayer: 14,
+      },
+      prayers: [
+        Prayer.PROTECT_MELEE,
+      ],
+      leagues: {
+        six: {
+          effects: {
+            talent_prayer_restore_no_overhead: 1,
+          },
+        },
+      },
+    });
+    const calc = new PlayerVsNPCCalc(p, m);
+
+    expect(calc.getPrayerTicks()).toBe(726);
+    expect(calc.getPrayerDuration()).toBeCloseTo(435.6);
+  });
+
+  test('demonic pact air rune regeneration can restore prayer while casting', () => {
+    const m = getTestMonster('Abyssal demon', 'Standard');
+    const p = getTestPlayer(m, {
+      attackSpeed: 5,
+      prayers: [
+        Prayer.PIETY,
+      ],
+      spell: findSpell('Fire Strike'),
+      style: {
+        name: 'Manual Cast',
+        type: 'magic',
+        stance: 'Manual Cast',
+      },
+      leagues: {
+        six: {
+          effects: {
+            talent_regen_ammo: 100,
+            talent_airrune_regen_prayer_restore: 15,
+          },
+        },
+      },
+    });
+    const calc = new PlayerVsNPCCalc(p, m);
+
+    expect(calc.getPrayerTicks()).toBe(292);
+    expect(calc.getPrayerDuration()).toBeCloseTo(175.2);
   });
 });

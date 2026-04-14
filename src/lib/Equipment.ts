@@ -19,6 +19,17 @@ export type EquipmentBonuses = Pick<Player, 'bonuses' | 'offensive' | 'defensive
  */
 export const availableEquipment = equipment as EquipmentPiece[];
 
+export const isDemonicPactsBowWeapon = (weapon?: PlayerEquipment['weapon']): boolean => (
+  weapon?.category === EquipmentCategory.BOW
+  && weapon?.name !== 'Eclipse atlatl'
+);
+
+export const isDemonicPactsThrownWeapon = (weapon?: PlayerEquipment['weapon']): boolean => (
+  weapon?.category === EquipmentCategory.THROWN
+  || weapon?.category === EquipmentCategory.CHINCHOMPA
+  || weapon?.name === 'Eclipse atlatl'
+);
+
 export const noStatExceptions = [
   'Castle wars bracelet',
   'Lightbearer',
@@ -304,8 +315,7 @@ export const calculateAttackSpeed = (player: Player, monster: Monster): number =
   }
 
   if (effects.talent_bow_fast_hits
-    && player.equipment.weapon?.category === EquipmentCategory.BOW
-    && player.equipment.weapon?.name !== 'Eclipse atlatl') {
+    && isDemonicPactsBowWeapon(player.equipment.weapon)) {
     attackSpeed -= 1;
   }
 
@@ -378,10 +388,7 @@ export const calculateEquipmentBonusesFromGear = (player: Player, monster: Monst
   const leagues = player.leagues.six.effects;
 
   if (leagues.talent_thrown_weapon_accuracy) {
-    const isWearingThrown = player.equipment.weapon?.category === EquipmentCategory.THROWN
-      || player.equipment.weapon?.category === EquipmentCategory.CHINCHOMPA
-      || player.equipment.weapon?.name === 'Eclipse atlatl';
-    totals.offensive.ranged += isWearingThrown ? 60 : 0;
+    totals.offensive.ranged += isDemonicPactsThrownWeapon(player.equipment.weapon) ? 60 : 0;
   }
 
   if (leagues.talent_percentage_magic_damage) {
@@ -458,10 +465,7 @@ export const calculateEquipmentBonusesFromGear = (player: Player, monster: Monst
   }
 
   const weapon = playerEquipment.weapon;
-  const isWearingThrown = weapon?.category === EquipmentCategory.THROWN
-    || weapon?.category === EquipmentCategory.CHINCHOMPA
-    || weapon?.name === 'Eclipse atlatl';
-  if (leagues.talent_thrown_weapon_melee_str_scale && isWearingThrown) {
+  if (leagues.talent_thrown_weapon_melee_str_scale && isDemonicPactsThrownWeapon(weapon)) {
     totals.bonuses.ranged_str += Math.trunc(totals.bonuses.str * 0.80);
   }
 

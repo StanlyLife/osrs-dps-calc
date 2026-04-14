@@ -129,14 +129,14 @@ const DemonicPactsLeague: React.FC = observer(() => {
   const unimplementedPacts = computed(() => {
     const leaguesEffects = store.player.leagues.six.effects;
     const unimplemented: string[] = [];
-    if (leaguesEffects.talent_bow_max_hit_stacking_increase || leaguesEffects.talent_bow_min_hit_stacking_increase) {
-      unimplemented.push('Repeat Bow Hit Damage (coming soon)');
-    }
     if (leaguesEffects.talent_fire_spell_burn_bounce) {
-      unimplemented.push('Fire Spell Burn (coming soon)');
+      unimplemented.push('Fire Spell Bounce / Burn TTK');
     }
-    if (leaguesEffects.talent_prayer_pen_all) {
-      unimplemented.push('Prayer Penetration (coming soon)');
+    if (leaguesEffects.talent_water_spell_bouce_heal) {
+      unimplemented.push('Water Spell Bounce Heal');
+    }
+    if (leaguesEffects.talent_earth_reduce_defence) {
+      unimplemented.push('Earth Spell Defence Reduction');
     }
     if (leaguesEffects.talent_max_hit_style_swap) {
       unimplemented.push('Style Swap Damage Bonus');
@@ -263,6 +263,59 @@ const DemonicPactsLeague: React.FC = observer(() => {
             </span>
           </span>
         </div>
+
+        {(store.player.leagues.six.effects.talent_bow_min_hit_stacking_increase
+          || store.player.leagues.six.effects.talent_bow_max_hit_stacking_increase) && (
+          <div className="flex items-center gap-2 mt-2">
+            <NumberInput
+              aria-labelledby="bowHitStacksLabel"
+              className="form-control w-12 text-centerl"
+              id="bowHitStacks"
+              min={0}
+              max={999}
+              title="Repeat Bow Hit Stacks"
+              value={store.player.leagues.six.bowHitStacks}
+              onChange={(v) => {
+                store.updatePlayer({ leagues: { six: { bowHitStacks: v } } });
+              }}
+            />
+
+            <span id="bowHitStacksLabel" className="ml-1 text-sm select-none">
+              Repeat Bow Hit Stacks
+              {' '}
+              <span
+                className="align-super underline decoration-dotted cursor-help text-xs text-gray-300"
+                data-tooltip-id="tooltip"
+                data-tooltip-content="Current successful bow-hit stack count after any halving from incoming damage. The calculator caps the resulting bonus at 15% of your base max hit."
+              >
+                ?
+              </span>
+            </span>
+          </div>
+        )}
+
+        <ShowIfLeagueEffectEnabled leaguesEffect="talent_prayer_pen_all">
+          <div className="mt-2 rounded border border-dark-200 bg-dark-300 px-3 py-2">
+            <div className="mb-1 text-sm font-medium">Enemy protection prayers</div>
+            <div className="flex flex-col gap-1">
+              <Toggle
+                checked={store.player.leagues.six.enemyPrayers.melee}
+                setChecked={(checked) => store.updatePlayer({ leagues: { six: { enemyPrayers: { melee: checked } } } })}
+                label="Protect from Melee"
+              />
+              <Toggle
+                checked={store.player.leagues.six.enemyPrayers.ranged}
+                setChecked={(checked) => store.updatePlayer({ leagues: { six: { enemyPrayers: { ranged: checked } } } })}
+                label="Protect from Missiles"
+              />
+              <Toggle
+                checked={store.player.leagues.six.enemyPrayers.magic}
+                setChecked={(checked) => store.updatePlayer({ leagues: { six: { enemyPrayers: { magic: checked } } } })}
+                label="Protect from Magic"
+              />
+            </div>
+          </div>
+        </ShowIfLeagueEffectEnabled>
 
         <ShowIfLeagueEffectEnabled leaguesEffect="talent_regen_magic_level_boost">
           <div className="flex items-center gap-2 mt-2">
