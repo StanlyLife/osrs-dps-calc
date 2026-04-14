@@ -41,15 +41,18 @@ a {
   @apply border;
   @apply text-sm;
   @apply rounded;
-  padding: .25em .5em;
-  transition: background-color 0.25s, color 0.25s, border 0.25s;
+  padding: 0.25em 0.5em;
+  transition:
+    background-color 0.25s,
+    color 0.25s,
+    border 0.25s;
 }
 
 .form-control::placeholder {
   @apply dark:text-gray-300;
 }
 
-.form-control[type=number] {
+.form-control[type="number"] {
   @apply font-mono;
 }
 
@@ -67,13 +70,14 @@ a {
   @apply opacity-50;
 }
 
-input.form-control[type=number] {
+input.form-control[type="number"] {
   -webkit-appearance: none;
   -moz-appearance: textfield;
   appearance: textfield;
 }
 
-#tooltip, #tooltip-warning {
+#tooltip,
+#tooltip-warning {
   @apply bg-black;
   @apply text-xs;
   @apply p-1;
@@ -130,17 +134,19 @@ button.btn:disabled {
   @apply dark:border-gray-400;
 }
 
-.recharts-xAxis, .recharts-yAxis {
+.recharts-xAxis,
+.recharts-yAxis {
   @apply font-mono;
 }
 
 .recharts-cartesian-axis .recharts-label {
-  font-size: .9em;
+  font-size: 0.9em;
   @apply lowercase;
 }
 
 /* Whatever style we apply to the axis ticks, we must apply to the measurement span to avoid issues */
-.recharts-cartesian-axis-ticks, #recharts_measurement_span {
+.recharts-cartesian-axis-ticks,
+#recharts_measurement_span {
   @apply text-sm;
 }
 
@@ -154,7 +160,8 @@ table {
   @apply text-sm;
 }
 
-th, td {
+th,
+td {
   @apply border-body-500;
   @apply dark:border-dark-200;
   @apply font-normal;

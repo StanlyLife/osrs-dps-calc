@@ -16,7 +16,9 @@ const TopBar: React.FC = observer(() => {
             <a target="_blank" href="https://oldschool.runescape.wiki">
               <img src={wiki.src} className="w-8 sm:w-12" alt="OSRS Wiki" />
             </a>
-            <h1 className="font-bold font-serif text-white text-sm sm:text-base whitespace-nowrap">DPS Calculator</h1>
+            <h1 className="font-bold font-serif text-white text-sm sm:text-base whitespace-nowrap">
+              DPS Calculator
+            </h1>
             <span className="hidden sm:inline text-sm text-white px-1 py-0.5 bg-orange-700 rounded [text-shadow:_0_1px_0_rgb(0_0_0_/_30%)] lowercase">
               Leagues tuned
             </span>

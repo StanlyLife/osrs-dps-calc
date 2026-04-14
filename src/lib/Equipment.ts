@@ -1,51 +1,56 @@
-import { EquipmentPiece, Player, PlayerEquipment } from '@/types/Player';
-import { Monster } from '@/types/Monster';
-import { keys } from '@/utils';
+import { EquipmentPiece, Player, PlayerEquipment } from "@/types/Player";
+import { Monster } from "@/types/Monster";
+import { keys } from "@/utils";
 import {
   BLOWPIPE_IDS,
   CAST_STANCES,
   DEFAULT_ATTACK_SPEED,
   TOMBS_OF_AMASCUT_MONSTER_IDS,
-} from '@/lib/constants';
-import { sum } from 'd3-array';
-import { EquipmentCategory } from '@/enums/EquipmentCategory';
-import equipment from '../../cdn/json/equipment.json';
-import generatedEquipmentAliases from './EquipmentAliases';
+} from "@/lib/constants";
+import { sum } from "d3-array";
+import { EquipmentCategory } from "@/enums/EquipmentCategory";
+import equipment from "../../cdn/json/equipment.json";
+import generatedEquipmentAliases from "./EquipmentAliases";
 
-export type EquipmentBonuses = Pick<Player, 'bonuses' | 'offensive' | 'defensive' | 'attackSpeed'>;
+export type EquipmentBonuses = Pick<
+  Player,
+  "bonuses" | "offensive" | "defensive" | "attackSpeed"
+>;
 
 /**
  * All available equipment that a player can equip.
  */
 export const availableEquipment = equipment as EquipmentPiece[];
 
-export const isDemonicPactsBowWeapon = (weapon?: PlayerEquipment['weapon']): boolean => (
-  weapon?.category === EquipmentCategory.BOW
-  && weapon?.name !== 'Eclipse atlatl'
-);
+export const isDemonicPactsBowWeapon = (
+  weapon?: PlayerEquipment["weapon"],
+): boolean =>
+  weapon?.category === EquipmentCategory.BOW &&
+  weapon?.name !== "Eclipse atlatl";
 
-export const isDemonicPactsThrownWeapon = (weapon?: PlayerEquipment['weapon']): boolean => (
-  weapon?.category === EquipmentCategory.THROWN
-  || weapon?.category === EquipmentCategory.CHINCHOMPA
-  || weapon?.name === 'Eclipse atlatl'
-);
+export const isDemonicPactsThrownWeapon = (
+  weapon?: PlayerEquipment["weapon"],
+): boolean =>
+  weapon?.category === EquipmentCategory.THROWN ||
+  weapon?.category === EquipmentCategory.CHINCHOMPA ||
+  weapon?.name === "Eclipse atlatl";
 
 export const noStatExceptions = [
-  'Castle wars bracelet',
-  'Lightbearer',
-  'Ring of recoil',
-  'Phoenix necklace',
-  'Reinforced goggles',
-  'Expeditious bracelet',
-  'Bracelet of slaughter',
-  'Facemask',
-  'Earmuffs',
-  'Bug lantern',
-  'Nose peg',
+  "Castle wars bracelet",
+  "Lightbearer",
+  "Ring of recoil",
+  "Phoenix necklace",
+  "Reinforced goggles",
+  "Expeditious bracelet",
+  "Bracelet of slaughter",
+  "Facemask",
+  "Earmuffs",
+  "Bug lantern",
+  "Nose peg",
   "Efaritay's aid",
-  'Inoculation bracelet',
-  'Bracelet of ethereum',
-  'Atlatl dart',
+  "Inoculation bracelet",
+  "Bracelet of ethereum",
+  "Atlatl dart",
   "Butler's tray",
 ];
 
@@ -54,27 +59,71 @@ export const noStatExceptions = [
  * "locked" variants of items, broken/degraded variants of armour and weapons, and cosmetic recolours of equipment.
  * @see https://oldschool.runescape.wiki/w/Trouver_parchment
  */
-export const equipmentAliases = generatedEquipmentAliases as { [key: number]: number[] };
+export const equipmentAliases = generatedEquipmentAliases as {
+  [key: number]: number[];
+};
 
 const commonAmmoCategories = () => {
   const ret: { [k: string]: number[] } = {
     bow_t1: [
-      882, 883, 5616, 5622, 598, 942, // Bronze arrow + variants
-      884, 885, 5617, 5623, 2532, 2533, // Iron arrow + variants
-      22227, 22228, 22229, 22230, // barb assault
+      882,
+      883,
+      5616,
+      5622,
+      598,
+      942, // Bronze arrow + variants
+      884,
+      885,
+      5617,
+      5623,
+      2532,
+      2533, // Iron arrow + variants
+      22227,
+      22228,
+      22229,
+      22230, // barb assault
     ],
     cb_t1: [
-      877, 878, 6061, 6062, 879, 9236, // Bronze bolts + variants, opal bolts + (e)
+      877,
+      878,
+      6061,
+      6062,
+      879,
+      9236, // Bronze bolts + variants, opal bolts + (e)
     ],
     javelin: [
-      825, 831, 5642, 5648, // Bronze javelin + variants
-      826, 832, 5643, 5649, // Iron javelin + variants
-      827, 833, 5644, 5650, // Steel javelin + variants
-      828, 834, 5645, 5651, // Mithril javelin + variants
-      829, 835, 5646, 5652, // Adamant javelin + variants
-      830, 836, 5647, 5653, // Rune javelin + variants
-      21318, 21320, 21322, 21324, // Amethyst javelin + variants
-      19484, 19486, 19488, 19490, // Dragon javelin + variants
+      825,
+      831,
+      5642,
+      5648, // Bronze javelin + variants
+      826,
+      832,
+      5643,
+      5649, // Iron javelin + variants
+      827,
+      833,
+      5644,
+      5650, // Steel javelin + variants
+      828,
+      834,
+      5645,
+      5651, // Mithril javelin + variants
+      829,
+      835,
+      5646,
+      5652, // Adamant javelin + variants
+      830,
+      836,
+      5647,
+      5653, // Rune javelin + variants
+      21318,
+      21320,
+      21322,
+      21324, // Amethyst javelin + variants
+      19484,
+      19486,
+      19488,
+      19490, // Dragon javelin + variants
     ],
   };
 
@@ -83,17 +132,76 @@ const commonAmmoCategories = () => {
   ret.bow_t20 = [...ret.bow_t5, 888, 889, 5619, 5625, 2536, 2537]; // Mithril arrow + variants
   ret.bow_t30 = [...ret.bow_t20, 890, 891, 5620, 5626, 2538, 2539]; // Adamant arrow + variants
   ret.bow_t40 = [...ret.bow_t30, 892, 893, 5621, 5627, 78, 2540, 2541]; // Rune arrow + variants, ice arrows
-  ret.bow_t50 = [...ret.bow_t40, 21326, 21332, 21334, 21336, 4160, 21328, 21330]; // Amethyst arrow + variants, broad arrows
+  ret.bow_t50 = [
+    ...ret.bow_t40,
+    21326,
+    21332,
+    21334,
+    21336,
+    4160,
+    21328,
+    21330,
+  ]; // Amethyst arrow + variants, broad arrows
   ret.bow_t60 = [...ret.bow_t50, 11212, 11227, 11228, 11229, 11217, 11222]; // Dragon arrow + variants
 
   // Bolts
   ret.cb_t16 = [...ret.cb_t1, 9139, 9286, 9293, 9300, 9335, 9237]; // Blurite bolts + variants, jade bolts + (e)
-  ret.cb_t26 = [...ret.cb_t16, 9140, 9287, 9294, 9301, 880, 9238, 9145, 9292, 9299, 9306]; // Iron bolts + variants, pearl bolts + (e), silver bolts
+  ret.cb_t26 = [
+    ...ret.cb_t16,
+    9140,
+    9287,
+    9294,
+    9301,
+    880,
+    9238,
+    9145,
+    9292,
+    9299,
+    9306,
+  ]; // Iron bolts + variants, pearl bolts + (e), silver bolts
   ret.cb_t31 = [...ret.cb_t26, 9141, 9288, 9295, 9302, 9336, 9239]; // Steel bolts + variants, topaz bolts + (e)
   ret.cb_t36 = [...ret.cb_t31, 9142, 9289, 9296, 9303, 9337, 9240, 9338, 9241]; // Mithril bolts + variants, sapphire/emerald bolts + (e)
   ret.cb_t46 = [...ret.cb_t36, 9143, 9290, 9297, 9304, 9339, 9242, 9340, 9243]; // Adamant bolts + variants, ruby/diamond bolts + (e)
-  ret.cb_t61 = [...ret.cb_t46, 9144, 9291, 9298, 9305, 11875, 21316, 9341, 9244, 9342, 9245]; // Runite bolts + variants, broad bolts, amethyst broad bolts, dragonstone/onyx bolts + (e)
-  ret.cb_t64 = [...ret.cb_t61, 21905, 21924, 21926, 21928, 21955, 21932, 21957, 21934, 21959, 21936, 21961, 21938, 21963, 21940, 21965, 21942, 21967, 21944, 21969, 21946, 21971, 21948, 21973, 21950]; // Dragon bolts + variants, many gem-tipped bolts
+  ret.cb_t61 = [
+    ...ret.cb_t46,
+    9144,
+    9291,
+    9298,
+    9305,
+    11875,
+    21316,
+    9341,
+    9244,
+    9342,
+    9245,
+  ]; // Runite bolts + variants, broad bolts, amethyst broad bolts, dragonstone/onyx bolts + (e)
+  ret.cb_t64 = [
+    ...ret.cb_t61,
+    21905,
+    21924,
+    21926,
+    21928,
+    21955,
+    21932,
+    21957,
+    21934,
+    21959,
+    21936,
+    21961,
+    21938,
+    21963,
+    21940,
+    21965,
+    21942,
+    21967,
+    21944,
+    21969,
+    21946,
+    21971,
+    21948,
+    21973,
+    21950,
+  ]; // Dragon bolts + variants, many gem-tipped bolts
   return ret;
 };
 
@@ -189,7 +297,10 @@ export enum AmmoApplicability {
  * @param weaponId - the item ID of the ranged weapon
  * @param ammoId - the item ID of the ammo (such as bronze arrows)
  */
-export const ammoApplicability = (weaponId?: number, ammoId?: number): AmmoApplicability => {
+export const ammoApplicability = (
+  weaponId?: number,
+  ammoId?: number,
+): AmmoApplicability => {
   const validAmmo = ammoForRangedWeapons[weaponId || -1];
 
   // The weapon does not use ammo
@@ -217,7 +328,9 @@ export const getCanonicalItemId = (itemId: number): number => {
   return itemId;
 };
 
-export const getCanonicalItem = (equipmentPiece: EquipmentPiece): EquipmentPiece => {
+export const getCanonicalItem = (
+  equipmentPiece: EquipmentPiece,
+): EquipmentPiece => {
   const canonicalId = getCanonicalItemId(equipmentPiece.id);
   if (equipmentPiece.id === canonicalId) {
     return equipmentPiece;
@@ -257,72 +370,95 @@ export const getCanonicalEquipment = (inputEq: PlayerEquipment) => {
 /**
  * Calculates the player's attack speed using current stance and equipment.
  */
-export const calculateAttackSpeed = (player: Player, monster: Monster): number => {
+export const calculateAttackSpeed = (
+  player: Player,
+  monster: Monster,
+): number => {
   let attackSpeed = player.equipment.weapon?.speed || DEFAULT_ATTACK_SPEED;
   const effects = player.leagues.six.effects;
 
-  if (effects.talent_melee_range_conditional_boost
-      && player.equipment.weapon?.category === EquipmentCategory.POLEARM
-      && attackSpeed > 5
-      && player.style.stance !== 'Manual Cast') {
+  if (
+    effects.talent_melee_range_conditional_boost &&
+    player.equipment.weapon?.category === EquipmentCategory.POLEARM &&
+    attackSpeed > 5 &&
+    player.style.stance !== "Manual Cast"
+  ) {
     // Todo: Does this stack with other attack speed reductions?
     return 5;
   }
 
-  if (player.style.type === 'ranged' && player.style.stance === 'Rapid') {
+  if (player.style.type === "ranged" && player.style.stance === "Rapid") {
     attackSpeed -= 1;
   } else if (CAST_STANCES.includes(player.style.stance)) {
-    if (player.equipment.weapon?.name === 'Harmonised nightmare staff'
-      && player.spell?.spellbook === 'standard'
-      && player.style.stance !== 'Manual Cast') {
+    if (
+      player.equipment.weapon?.name === "Harmonised nightmare staff" &&
+      player.spell?.spellbook === "standard" &&
+      player.style.stance !== "Manual Cast"
+    ) {
       attackSpeed = 4;
-    } else if (player.equipment.weapon?.name === 'Twinflame staff') {
+    } else if (player.equipment.weapon?.name === "Twinflame staff") {
       attackSpeed = 6;
     } else {
       attackSpeed = 5;
     }
   }
 
-  if (player.equipment.weapon?.category === EquipmentCategory.CROSSBOW
-      && player.leagues.six.effects.talent_crossbow_slow_big_hits) {
+  if (
+    player.equipment.weapon?.category === EquipmentCategory.CROSSBOW &&
+    player.leagues.six.effects.talent_crossbow_slow_big_hits
+  ) {
     attackSpeed += 2;
   }
 
   // Giant rat (Scurrius)
-  if (monster.id === 7223 && player.style.stance !== 'Manual Cast') {
-    if (['Bone mace', 'Bone shortbow', 'Bone staff'].includes(player.equipment.weapon?.name || '')) {
+  if (monster.id === 7223 && player.style.stance !== "Manual Cast") {
+    if (
+      ["Bone mace", "Bone shortbow", "Bone staff"].includes(
+        player.equipment.weapon?.name || "",
+      )
+    ) {
       attackSpeed = 1;
     }
   }
 
-  if (effects.talent_light_weapon_faster
-    && ['slash', 'crush', 'stab'].includes(player.style?.type || '')
-    && (player.equipment.weapon?.weight || Infinity) < 1) {
+  if (
+    effects.talent_light_weapon_faster &&
+    ["slash", "crush", "stab"].includes(player.style?.type || "") &&
+    (player.equipment.weapon?.weight || Infinity) < 1
+  ) {
     attackSpeed -= 1;
   }
 
-  if (effects.talent_magic_attack_speed_traditional
-    && CAST_STANCES.includes(player.style.stance)
+  if (
+    effects.talent_magic_attack_speed_traditional &&
+    CAST_STANCES.includes(player.style.stance)
   ) {
     attackSpeed -= 2;
     return Math.max(attackSpeed, 2);
   }
 
-  if (effects.talent_magic_attack_speed_powered
-    && player.equipment.weapon?.category === EquipmentCategory.POWERED_STAFF
-    && player.style.stance !== 'Manual Cast') {
+  if (
+    effects.talent_magic_attack_speed_powered &&
+    player.equipment.weapon?.category === EquipmentCategory.POWERED_STAFF &&
+    player.style.stance !== "Manual Cast"
+  ) {
     attackSpeed -= 3;
   }
 
-  if (effects.talent_bow_fast_hits
-    && isDemonicPactsBowWeapon(player.equipment.weapon)) {
+  if (
+    effects.talent_bow_fast_hits &&
+    isDemonicPactsBowWeapon(player.equipment.weapon)
+  ) {
     attackSpeed -= 1;
   }
 
   return Math.max(attackSpeed, 1);
 };
 
-export const calculateEquipmentBonusesFromGear = (player: Player, monster: Monster): EquipmentBonuses => {
+export const calculateEquipmentBonusesFromGear = (
+  player: Player,
+  monster: Monster,
+): EquipmentBonuses => {
   const totals: EquipmentBonuses = {
     bonuses: {
       str: 0,
@@ -348,7 +484,9 @@ export const calculateEquipmentBonusesFromGear = (player: Player, monster: Monst
   };
 
   // canonicalize all items first, otherwise ammoApplicability etc calls may return incorrect results later
-  const playerEquipment: PlayerEquipment = getCanonicalEquipment(player.equipment);
+  const playerEquipment: PlayerEquipment = getCanonicalEquipment(
+    player.equipment,
+  );
 
   keys(playerEquipment).forEach((slot) => {
     const piece = playerEquipment[slot]!;
@@ -357,16 +495,19 @@ export const calculateEquipmentBonusesFromGear = (player: Player, monster: Monst
     }
 
     // skip over ammo slot's ranged bonuses if it is not used by the bow
-    const applyRangedStats = piece.slot !== 'ammo' || ammoApplicability(playerEquipment.weapon?.id, piece.id) === AmmoApplicability.INCLUDED;
+    const applyRangedStats =
+      piece.slot !== "ammo" ||
+      ammoApplicability(playerEquipment.weapon?.id, piece.id) ===
+        AmmoApplicability.INCLUDED;
 
     keys(piece.bonuses).forEach((stat) => {
-      if (stat === 'ranged_str' && !applyRangedStats) {
+      if (stat === "ranged_str" && !applyRangedStats) {
         return;
       }
       totals.bonuses[stat] += piece.bonuses[stat] || 0;
     });
     keys(piece.offensive).forEach((stat) => {
-      if (stat === 'ranged' && !applyRangedStats) {
+      if (stat === "ranged" && !applyRangedStats) {
         return;
       }
       totals.offensive[stat] += piece.offensive[stat] || 0;
@@ -377,7 +518,9 @@ export const calculateEquipmentBonusesFromGear = (player: Player, monster: Monst
   });
 
   if (BLOWPIPE_IDS.includes(playerEquipment.weapon?.id || 0)) {
-    const dart = availableEquipment.find((e) => e.id === playerEquipment.weapon?.itemVars?.blowpipeDartId);
+    const dart = availableEquipment.find(
+      (e) => e.id === playerEquipment.weapon?.itemVars?.blowpipeDartId,
+    );
     if (dart) {
       totals.bonuses.ranged_str += dart.bonuses.ranged_str;
     } else {
@@ -388,62 +531,98 @@ export const calculateEquipmentBonusesFromGear = (player: Player, monster: Monst
   const leagues = player.leagues.six.effects;
 
   if (leagues.talent_thrown_weapon_accuracy) {
-    totals.offensive.ranged += isDemonicPactsThrownWeapon(player.equipment.weapon) ? 60 : 0;
+    totals.offensive.ranged += isDemonicPactsThrownWeapon(
+      player.equipment.weapon,
+    )
+      ? 60
+      : 0;
   }
 
   if (leagues.talent_percentage_magic_damage) {
     totals.bonuses.magic_str += leagues.talent_percentage_magic_damage * 10;
   }
 
-  if (playerEquipment.ammo?.name === 'Crystal blessing') {
+  if (playerEquipment.ammo?.name === "Crystal blessing") {
     const crystalPieces = [
       playerEquipment.head,
       playerEquipment.body,
       playerEquipment.legs,
     ];
-    const matchingPieces = crystalPieces.filter(
-      (item) => item?.name?.startsWith('Crystal '),
+    const matchingPieces = crystalPieces.filter((item) =>
+      item?.name?.startsWith("Crystal "),
     ).length;
 
     totals.bonuses.magic_str += matchingPieces * 20;
     totals.offensive.magic += matchingPieces * 20;
   }
 
-  if (playerEquipment.weapon?.name === "Tumeken's shadow" && player.style.stance !== 'Manual Cast') {
+  if (
+    playerEquipment.weapon?.name === "Tumeken's shadow" &&
+    player.style.stance !== "Manual Cast"
+  ) {
     const factor = TOMBS_OF_AMASCUT_MONSTER_IDS.includes(monster.id) ? 4 : 3;
-    totals.bonuses.magic_str = Math.min(1000, totals.bonuses.magic_str * factor);
+    totals.bonuses.magic_str = Math.min(
+      1000,
+      totals.bonuses.magic_str * factor,
+    );
     totals.offensive.magic *= factor;
   }
 
-  if (playerEquipment.weapon?.name === 'Keris partisan of amascut' && !TOMBS_OF_AMASCUT_MONSTER_IDS.includes(monster.id)) {
+  if (
+    playerEquipment.weapon?.name === "Keris partisan of amascut" &&
+    !TOMBS_OF_AMASCUT_MONSTER_IDS.includes(monster.id)
+  ) {
     totals.bonuses.str -= 22;
     totals.offensive.stab -= 50;
   }
 
-  if (playerEquipment.weapon?.name === "Dinh's bulwark" || playerEquipment.weapon?.name === "Dinh's blazing bulwark") {
+  if (
+    playerEquipment.weapon?.name === "Dinh's bulwark" ||
+    playerEquipment.weapon?.name === "Dinh's blazing bulwark"
+  ) {
     const defensives = totals.defensive;
-    const defenceSum = defensives.stab + defensives.slash + defensives.crush + defensives.ranged;
+    const defenceSum =
+      defensives.stab + defensives.slash + defensives.crush + defensives.ranged;
     totals.bonuses.str += Math.max(0, Math.trunc((defenceSum - 800) / 12) - 38);
   }
 
-  if (player.spell?.spellbook === 'ancient' && CAST_STANCES.includes(player.style.stance)) {
-    const virtusPieces = sum([playerEquipment.head?.name, playerEquipment.body?.name, playerEquipment.legs?.name], (i) => (i?.includes('Virtus') ? 1 : 0));
+  if (
+    player.spell?.spellbook === "ancient" &&
+    CAST_STANCES.includes(player.style.stance)
+  ) {
+    const virtusPieces = sum(
+      [
+        playerEquipment.head?.name,
+        playerEquipment.body?.name,
+        playerEquipment.legs?.name,
+      ],
+      (i) => (i?.includes("Virtus") ? 1 : 0),
+    );
     totals.bonuses.magic_str += 30 * virtusPieces;
   }
 
   // void mage is a visible bonus of 5%
-  if (playerEquipment.head?.name === 'Void mage helm'
-    && playerEquipment.body?.name === 'Elite void top'
-    && playerEquipment.legs?.name === 'Elite void robe'
-    && playerEquipment.hands?.name === 'Void knight gloves') {
+  if (
+    playerEquipment.head?.name === "Void mage helm" &&
+    playerEquipment.body?.name === "Elite void top" &&
+    playerEquipment.legs?.name === "Elite void robe" &&
+    playerEquipment.hands?.name === "Void knight gloves"
+  ) {
     totals.bonuses.magic_str += 50;
   }
 
   const cape = playerEquipment.cape;
-  const dizanasQuiverCharged = cape?.name === "Dizana's max cape"
-    || cape?.name === "Blessed dizana's quiver"
-    || (cape?.name === "Dizana's quiver" && cape?.version === 'Charged');
-  if (dizanasQuiverCharged && ammoApplicability(player.equipment.weapon?.id, player.equipment.ammo?.id) === AmmoApplicability.INCLUDED) {
+  const dizanasQuiverCharged =
+    cape?.name === "Dizana's max cape" ||
+    cape?.name === "Blessed dizana's quiver" ||
+    (cape?.name === "Dizana's quiver" && cape?.version === "Charged");
+  if (
+    dizanasQuiverCharged &&
+    ammoApplicability(
+      player.equipment.weapon?.id,
+      player.equipment.ammo?.id,
+    ) === AmmoApplicability.INCLUDED
+  ) {
     totals.offensive.ranged += 10;
     totals.bonuses.ranged_str += 1;
   }
@@ -465,8 +644,11 @@ export const calculateEquipmentBonusesFromGear = (player: Player, monster: Monst
   }
 
   const weapon = playerEquipment.weapon;
-  if (leagues.talent_thrown_weapon_melee_str_scale && isDemonicPactsThrownWeapon(weapon)) {
-    totals.bonuses.ranged_str += Math.trunc(totals.bonuses.str * 0.80);
+  if (
+    leagues.talent_thrown_weapon_melee_str_scale &&
+    isDemonicPactsThrownWeapon(weapon)
+  ) {
+    totals.bonuses.ranged_str += Math.trunc(totals.bonuses.str * 0.8);
   }
 
   totals.attackSpeed = calculateAttackSpeed(player, monster);
@@ -476,69 +658,69 @@ export const calculateEquipmentBonusesFromGear = (player: Player, monster: Monst
 
 /* eslint-disable quote-props */
 export const WEAPON_SPEC_COSTS: { [canonicalName: string]: number } = {
-  'Abyssal dagger': 25,
-  'Dragon dagger': 25,
-  'Dragon longsword': 25,
-  'Dragon mace': 25,
+  "Abyssal dagger": 25,
+  "Dragon dagger": 25,
+  "Dragon longsword": 25,
+  "Dragon mace": 25,
   "Osmumten's fang": 25,
   "Osmumten's fang (or)": 25,
-  'Dual macuahuitl': 25,
-  'Scorching bow': 25,
-  'Dragon knife': 25,
-  'Purging staff': 25,
-  'Rosewood blowpipe': 25,
+  "Dual macuahuitl": 25,
+  "Scorching bow": 25,
+  "Dragon knife": 25,
+  "Purging staff": 25,
+  "Rosewood blowpipe": 25,
 
-  'Dawnbringer': 30,
-  'Dragon halberd': 30,
-  'Crystal halberd': 30,
-  'Burning claws': 30,
-  'Arkan blade': 30,
+  Dawnbringer: 30,
+  "Dragon halberd": 30,
+  "Crystal halberd": 30,
+  "Burning claws": 30,
+  "Arkan blade": 30,
 
-  'Magic longbow': 35,
-  'Magic comp bow': 35,
+  "Magic longbow": 35,
+  "Magic comp bow": 35,
 
-  'Dragon sword': 40,
+  "Dragon sword": 40,
 
-  'Elder maul': 50,
-  'Dragon warhammer': 50,
-  'Bandos godsword': 50,
-  'Saradomin godsword': 50,
-  'Accursed sceptre': 50,
-  'Accursed sceptre (a)': 50,
-  'Arclight': 50,
-  'Emberlight': 50,
-  'Tonalztics of ralos': 50,
-  'Dragon claws': 50,
-  'Voidwaker': 50,
-  'Toxic blowpipe': 50,
-  'Blazing blowpipe': 50,
-  'Webweaver bow': 50,
-  'Magic shortbow (i)': 50,
-  'Ancient godsword': 50,
-  'Armadyl godsword': 50,
-  'Zamorak godsword': 50,
-  'Abyssal bludgeon': 50,
-  'Abyssal whip': 50,
-  'Barrelchest anchor': 50,
-  'Eye of ayak': 50,
+  "Elder maul": 50,
+  "Dragon warhammer": 50,
+  "Bandos godsword": 50,
+  "Saradomin godsword": 50,
+  "Accursed sceptre": 50,
+  "Accursed sceptre (a)": 50,
+  Arclight: 50,
+  Emberlight: 50,
+  "Tonalztics of ralos": 50,
+  "Dragon claws": 50,
+  Voidwaker: 50,
+  "Toxic blowpipe": 50,
+  "Blazing blowpipe": 50,
+  "Webweaver bow": 50,
+  "Magic shortbow (i)": 50,
+  "Ancient godsword": 50,
+  "Armadyl godsword": 50,
+  "Zamorak godsword": 50,
+  "Abyssal bludgeon": 50,
+  "Abyssal whip": 50,
+  "Barrelchest anchor": 50,
+  "Eye of ayak": 50,
 
-  'Magic shortbow': 55,
-  'Dark bow': 55,
-  'Eldritch nightmare staff': 55,
-  'Volatile nightmare staff': 55,
-  'Dragon scimitar': 55,
+  "Magic shortbow": 55,
+  "Dark bow": 55,
+  "Eldritch nightmare staff": 55,
+  "Volatile nightmare staff": 55,
+  "Dragon scimitar": 55,
 
-  'Granite hammer': 60,
+  "Granite hammer": 60,
 
-  'Heavy ballista': 65,
-  'Light ballista': 65,
+  "Heavy ballista": 65,
+  "Light ballista": 65,
   "Saradomin's blessed sword": 65,
 
-  'Brine sabre': 75,
-  'Zaryte crossbow': 75,
+  "Brine sabre": 75,
+  "Zaryte crossbow": 75,
 
-  'Saradomin sword': 100,
-  'Seercull': 100,
+  "Saradomin sword": 100,
+  Seercull: 100,
 };
 /* eslint-enable quote-props */
 

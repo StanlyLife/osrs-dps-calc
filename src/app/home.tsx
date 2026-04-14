@@ -1,44 +1,54 @@
-'use client';
+"use client";
 
-import type { NextPage } from 'next';
-import MonsterContainer from '@/app/components/monster/MonsterContainer';
-import { Tooltip } from 'react-tooltip';
-import React, {
-  Suspense,
-  useEffect,
-  useMemo,
-} from 'react';
-import { observer } from 'mobx-react-lite';
-import { useStore } from '@/state';
-import { ToastContainer } from 'react-toastify';
-import PlayerContainer from '@/app/components/player/PlayerContainer';
-import PlayerVsNPCResultsContainer from '@/app/components/results/PlayerVsNPCResultsContainer';
-import { IReactionPublic, reaction, toJS } from 'mobx';
-import InitialLoad from '@/app/components/InitialLoad';
-import ShareModal from '@/app/components/ShareModal';
-import DebugPanels from '@/app/components/results/DebugPanels';
-import { IconAlertTriangle } from '@tabler/icons-react';
-import { useCalc } from '@/worker/CalcWorker';
-import { NUMBER_OF_LOADOUTS } from '@/lib/constants';
-import { Monster } from '@/types/Monster';
+import type { NextPage } from "next";
+import MonsterContainer from "@/app/components/monster/MonsterContainer";
+import { Tooltip } from "react-tooltip";
+import React, { Suspense, useEffect, useMemo } from "react";
+import { observer } from "mobx-react-lite";
+import { useStore } from "@/state";
+import { ToastContainer } from "react-toastify";
+import PlayerContainer from "@/app/components/player/PlayerContainer";
+import PlayerVsNPCResultsContainer from "@/app/components/results/PlayerVsNPCResultsContainer";
+import { IReactionPublic, reaction, toJS } from "mobx";
+import InitialLoad from "@/app/components/InitialLoad";
+import ShareModal from "@/app/components/ShareModal";
+import DebugPanels from "@/app/components/results/DebugPanels";
+import { IconAlertTriangle } from "@tabler/icons-react";
+import { useCalc } from "@/worker/CalcWorker";
+import { NUMBER_OF_LOADOUTS } from "@/lib/constants";
+import { Monster } from "@/types/Monster";
 
-const isExpectedCalcWorkerError = (error: unknown): boolean => error instanceof Error
-  && (
-    error.message.includes('superseded by a newer')
-    || error.message.includes('worker was shutdown')
-  );
+const isExpectedCalcWorkerError = (error: unknown): boolean =>
+  error instanceof Error &&
+  (error.message.includes("superseded by a newer") ||
+    error.message.includes("worker was shutdown"));
 
-const LOADOUT_SHORTCUT_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'] as const;
+const LOADOUT_SHORTCUT_KEYS = [
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+  "0",
+] as const;
 
-const getMonsterKey = (monster: Pick<Monster, 'id' | 'version'>) => `${monster.id}:${monster.version || ''}`;
+const getMonsterKey = (monster: Pick<Monster, "id" | "version">) =>
+  `${monster.id}:${monster.version || ""}`;
 
 const Home: NextPage = observer(() => {
   const calc = useCalc();
   const store = useStore();
-  const debugEnabled = process.env.NEXT_PUBLIC_ENABLE_DEBUG === 'true';
+  const debugEnabled = process.env.NEXT_PUBLIC_ENABLE_DEBUG === "true";
 
   const comparisonMonsters = useMemo(
-    () => store.comparisonMonsterSlots.flatMap((slot) => (slot.monster ? [slot.monster] : [])),
+    () =>
+      store.comparisonMonsterSlots.flatMap((slot) =>
+        slot.monster ? [slot.monster] : [],
+      ),
     [store.comparisonMonsterSlots],
   );
 
@@ -89,9 +99,16 @@ const Home: NextPage = observer(() => {
     // Ignore if any modifier keys are held (to not interfere with browser/system shortcuts)
     if (e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return;
 
-    if (LOADOUT_SHORTCUT_KEYS.includes(e.key as typeof LOADOUT_SHORTCUT_KEYS[number])) {
-      const shortcutIndex = e.key === '0' ? 9 : Number(e.key) - 1;
-      if (shortcutIndex < NUMBER_OF_LOADOUTS && store.loadouts[shortcutIndex] !== undefined) {
+    if (
+      LOADOUT_SHORTCUT_KEYS.includes(
+        e.key as (typeof LOADOUT_SHORTCUT_KEYS)[number],
+      )
+    ) {
+      const shortcutIndex = e.key === "0" ? 9 : Number(e.key) - 1;
+      if (
+        shortcutIndex < NUMBER_OF_LOADOUTS &&
+        store.loadouts[shortcutIndex] !== undefined
+      ) {
         store.setSelectedLoadout(shortcutIndex);
       }
     } else {
@@ -107,22 +124,21 @@ const Home: NextPage = observer(() => {
     store.loadPreferences();
 
     // Setup global event handling
-    document.addEventListener('keydown', globalKeyDownHandler);
+    document.addEventListener("keydown", globalKeyDownHandler);
 
     return () => {
-      document.removeEventListener('keydown', globalKeyDownHandler);
+      document.removeEventListener("keydown", globalKeyDownHandler);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     const recompute = () => {
-      store.doWorkerRecompute()
-        .catch((error) => {
-          if (!isExpectedCalcWorkerError(error)) {
-            console.error(error);
-          }
-        });
+      store.doWorkerRecompute().catch((error) => {
+        if (!isExpectedCalcWorkerError(error)) {
+          console.error(error);
+        }
+      });
     };
 
     // When a calculator input changes, trigger a re-compute on the worker
@@ -130,7 +146,9 @@ const Home: NextPage = observer(() => {
       () => toJS(store.loadouts),
       () => toJS(store.monster),
     ];
-    const reactions = triggers.map((t) => reaction(t, recompute, { fireImmediately: true }));
+    const reactions = triggers.map((t) =>
+      reaction(t, recompute, { fireImmediately: true }),
+    );
 
     return () => {
       for (const r of reactions) {
@@ -149,7 +167,8 @@ const Home: NextPage = observer(() => {
           onClick={() => store.updatePreferences({ manualMode: false })}
         >
           <IconAlertTriangle className="text-orange-200" />
-          Manual mode is enabled! Some things may not function correctly. Click here to disable it.
+          Manual mode is enabled! Some things may not function correctly. Click
+          here to disable it.
         </button>
       )}
       <Suspense>
@@ -168,7 +187,9 @@ const Home: NextPage = observer(() => {
               onUpdateComparisonMonster={store.updateComparisonMonsterSlot}
             />
           </div>
-          <PlayerVsNPCResultsContainer comparisonMonsters={comparisonMonsters} />
+          <PlayerVsNPCResultsContainer
+            comparisonMonsters={comparisonMonsters}
+          />
         </div>
       </div>
       <div className="max-w-[1420px] mx-auto mb-8 px-2 pl-14 sm:px-4 sm:pl-16 md:pl-20">
