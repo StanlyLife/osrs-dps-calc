@@ -28,7 +28,7 @@ const Modal: React.FC<PropsWithChildren<IModalProps>> = (props) => {
       leaveTo="opacity-0"
       as={Fragment}
     >
-      <Dialog onClose={() => setIsOpen(false)}>
+      <Dialog className="relative z-50" onClose={() => setIsOpen(false)}>
         <div className="fixed inset-0 bg-black/60" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel className={`w-full ${maxWidth ?? 'max-w-lg'} rounded-xl bg-white dark:bg-dark-300 dark:text-white text-black shadow-xl`}>

@@ -45,7 +45,7 @@ const SpellContainer: React.FC = () => {
         <div>
           <button
             type="button"
-            className="disabled:cursor-not-allowed text-body-500 dark:text-dark-100 disabled:text-btns-100 dark:disabled:text-dark-500 hover:text-red transition-colors"
+            className="disabled:cursor-not-allowed text-body-500 dark:text-dark-100 disabled:text-btns-100 dark:disabled:text-dark-500 hover:text-red-300 transition-colors"
             data-tooltip-id="tooltip"
             data-tooltip-content="Remove spell"
             onClick={() => store.updatePlayer({ spell: null })}
