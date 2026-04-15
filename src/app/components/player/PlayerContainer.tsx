@@ -1,12 +1,12 @@
-import React, { useEffect, useRef, useState } from "react";
-import { observer } from "mobx-react-lite";
-import { useStore } from "@/state";
-import { calculateCombatLevel, classNames } from "@/utils";
-import LoadoutTabLabel from "@/app/components/LoadoutTabLabel";
-import PlayerInnerContainer from "@/app/components/player/PlayerInnerContainer";
-import LoadoutName from "@/app/components/player/LoadoutName";
-import LoadoutRegionSelector from "@/app/components/player/LoadoutRegionSelector";
-import { IconPlus, IconTrash } from "@tabler/icons-react";
+import React, { useEffect, useRef, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+import { useStore } from '@/state';
+import { calculateCombatLevel, classNames } from '@/utils';
+import LoadoutTabLabel from '@/app/components/LoadoutTabLabel';
+import PlayerInnerContainer from '@/app/components/player/PlayerInnerContainer';
+import LoadoutName from '@/app/components/player/LoadoutName';
+import LoadoutRegionSelector from '@/app/components/player/LoadoutRegionSelector';
+import { IconPlus, IconTrash } from '@tabler/icons-react';
 
 const PlayerContainer: React.FC = observer(() => {
   const store = useStore();
@@ -35,12 +35,10 @@ const PlayerContainer: React.FC = observer(() => {
     index: number,
   ) => {
     const baseLabel = loadout.name || `Loadout ${index + 1}`;
-    const regionLabel =
-      loadout.leagues.six.regions.length > 0
-        ? ` • ${loadout.leagues.six.regions.join(", ")}`
-        : "";
-    const reorderHint =
-      loadouts.length > 1 ? " • Drag over tabs to reorder" : "";
+    const regionLabel = loadout.leagues.six.regions.length > 0
+      ? ` • ${loadout.leagues.six.regions.join(', ')}`
+      : '';
+    const reorderHint = loadouts.length > 1 ? ' • Drag over tabs to reorder' : '';
     return `${baseLabel}${regionLabel}${reorderHint}`;
   };
 
@@ -73,8 +71,7 @@ const PlayerContainer: React.FC = observer(() => {
       const visibleTabs = tabRefs.current
         .map((tab, index) => ({ tab, index }))
         .filter(
-          (entry): entry is { tab: HTMLButtonElement; index: number } =>
-            entry.tab !== null,
+          (entry): entry is { tab: HTMLButtonElement; index: number } => entry.tab !== null,
         );
 
       if (!visibleTabs.length) {
@@ -96,9 +93,9 @@ const PlayerContainer: React.FC = observer(() => {
       }
 
       if (
-        Number.isNaN(targetIndex) ||
-        currentDragIndex === null ||
-        currentDragIndex === targetIndex
+        Number.isNaN(targetIndex)
+        || currentDragIndex === null
+        || currentDragIndex === targetIndex
       ) {
         return;
       }
@@ -118,11 +115,11 @@ const PlayerContainer: React.FC = observer(() => {
       clearDragState();
     };
 
-    window.addEventListener("pointermove", handlePointerMove);
-    window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
     return () => {
-      window.removeEventListener("pointermove", handlePointerMove);
-      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
     };
   }, [draggedLoadoutIndex, reorderLoadouts]);
 
@@ -135,14 +132,14 @@ const PlayerContainer: React.FC = observer(() => {
             // eslint-disable-next-line react/no-array-index-key
             key={ix}
             className={classNames(
-              "flex h-8 w-10 sm:h-10 sm:w-12 cursor-grab touch-none items-center justify-center rounded-r-xl border border-l-0 border-body-100 shadow-sm transition-all active:cursor-grabbing dark:border-dark-300",
-              draggedLoadoutIndex === ix ? "opacity-40" : "",
+              'flex h-8 w-10 sm:h-10 sm:w-12 cursor-grab touch-none items-center justify-center rounded-r-xl border border-l-0 border-body-100 shadow-sm transition-all active:cursor-grabbing dark:border-dark-300',
+              draggedLoadoutIndex === ix ? 'opacity-40' : '',
               dropTargetIndex === ix
-                ? "translate-x-1 ring-2 ring-orange-300 dark:ring-orange-600"
-                : "",
+                ? 'translate-x-1 ring-2 ring-orange-300 dark:ring-orange-600'
+                : '',
               selectedLoadout === ix
-                ? "bg-orange-400 text-white dark:bg-orange-700"
-                : "bg-btns-400 text-body-500 hover:bg-btns-300 dark:bg-dark-400 dark:text-dark-100 dark:hover:bg-dark-500",
+                ? 'bg-orange-400 text-white dark:bg-orange-700'
+                : 'bg-btns-400 text-body-500 hover:bg-btns-300 dark:bg-dark-400 dark:text-dark-100 dark:hover:bg-dark-500',
             )}
             ref={(element) => {
               tabRefs.current[ix] = element;
@@ -205,7 +202,9 @@ const PlayerContainer: React.FC = observer(() => {
               index={selectedLoadout}
             />
             <div className="text-xs font-bold text-gray-500 dark:text-gray-300">
-              Level {calculateCombatLevel(player.skills)}
+              Level
+              {' '}
+              {calculateCombatLevel(player.skills)}
             </div>
             <LoadoutRegionSelector />
           </div>

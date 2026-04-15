@@ -160,7 +160,7 @@ const steadyStateBurnDist = (
   return dist;
 };
 
-export const getExpectedBurn = (
+const getExpectedBurn = (
   hitChance: number,
   attackSpeed: number,
   burnChance: number,
@@ -180,3 +180,5 @@ export const getExpectedBurn = (
 
   return HITS_PER_STACK * procChance * (1 - capProb);
 };
+
+export default getExpectedBurn;

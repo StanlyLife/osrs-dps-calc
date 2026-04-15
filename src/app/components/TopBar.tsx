@@ -1,9 +1,9 @@
-import { useStore } from "@/state";
-import { IconShare2 } from "@tabler/icons-react";
-import wiki from "@/public/img/Wiki@2x.webp";
-import React from "react";
-import { observer } from "mobx-react-lite";
-import Changelog from "@/app/components/Changelog";
+import { useStore } from '@/state';
+import { IconShare2 } from '@tabler/icons-react';
+import wiki from '@/public/img/Wiki@2x.webp';
+import React from 'react';
+import { observer } from 'mobx-react-lite';
+import Changelog from '@/app/components/Changelog';
 
 const TopBar: React.FC = observer(() => {
   const store = useStore();
