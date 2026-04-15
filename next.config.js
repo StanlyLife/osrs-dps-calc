@@ -16,11 +16,12 @@ try {
 }
 
 const shouldAnalyse = process.env.ANALYSE === 'true';
+const configuredBasePath = process.env.NEXT_PUBLIC_BASE_PATH || undefined;
 
 let nextConfig = {
   output: 'export',
   reactStrictMode: true,
-  basePath: process.env.NEXT_PUBLIC_BASE_PATH,
+  basePath: configuredBasePath,
   images: {
     unoptimized: true,
     domains: ['runescape.wiki', 'oldschool.runescape.wiki'],
@@ -36,11 +37,11 @@ let nextConfig = {
     GIT_DIRTY: gitDirty,
   },
   async redirects() {
-    if (process.env.NEXT_PUBLIC_BASE_PATH) {
+    if (configuredBasePath) {
       return [
         {
           source: '/',
-          destination: process.env.NEXT_PUBLIC_BASE_PATH,
+          destination: configuredBasePath,
           basePath: false,
           permanent: true
         }
