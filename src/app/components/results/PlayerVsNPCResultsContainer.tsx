@@ -1,12 +1,12 @@
-import React from "react";
-import PlayerVsNPCResultsTable from "@/app/components/results/PlayerVsNPCResultsTable";
-import EnemyComparisonResults from "@/app/components/results/EnemyComparisonResults";
-import MonsterResultsTitle from "@/app/components/results/MonsterResultsTitle";
-import { observer } from "mobx-react-lite";
-import AutoHeight from "@/app/components/generic/AutoHeight";
-import { useStore } from "@/state";
-import { toJS } from "mobx";
-import { Monster } from "@/types/Monster";
+import React from 'react';
+import PlayerVsNPCResultsTable from '@/app/components/results/PlayerVsNPCResultsTable';
+import EnemyComparisonResults from '@/app/components/results/EnemyComparisonResults';
+import MonsterResultsTitle from '@/app/components/results/MonsterResultsTitle';
+import { observer } from 'mobx-react-lite';
+import AutoHeight from '@/app/components/generic/AutoHeight';
+import { useStore } from '@/state';
+import { toJS } from 'mobx';
+import { Monster } from '@/types/Monster';
 
 interface ResultsContainerProps {
   comparisonMonsters: Monster[];

@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import { getExpectedBurn } from '@/lib/Burn';
+import getExpectedBurn from '@/lib/Burn';
 
 describe('getExpectedBurn', () => {
   test('returns zero when a burn can never proc', () => {

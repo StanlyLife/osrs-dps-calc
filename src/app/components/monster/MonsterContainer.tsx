@@ -1,38 +1,38 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { PartialDeep } from "type-fest";
-import demon from "@/public/img/bonuses/demon.png";
-import hitpoints from "@/public/img/bonuses/hitpoints.png";
-import mining from "@/public/img/bonuses/mining.png";
-import toaRaidLevel from "@/public/img/toa_raidlevel.webp";
-import raidsIcon from "@/public/img/raids_icon.webp";
-import coxCmIcon from "@/public/img/cox_challenge_mode.png";
-import { useStore } from "@/state";
-import { observer } from "mobx-react-lite";
-import { MonsterAttribute } from "@/enums/MonsterAttribute";
-import { getCdnImage, typedMerge } from "@/utils";
-import NumberInput from "@/app/components/generic/NumberInput";
+import React, { useEffect, useMemo, useState } from 'react';
+import { PartialDeep } from 'type-fest';
+import demon from '@/public/img/bonuses/demon.png';
+import hitpoints from '@/public/img/bonuses/hitpoints.png';
+import mining from '@/public/img/bonuses/mining.png';
+import toaRaidLevel from '@/public/img/toa_raidlevel.webp';
+import raidsIcon from '@/public/img/raids_icon.webp';
+import coxCmIcon from '@/public/img/cox_challenge_mode.png';
+import { useStore } from '@/state';
+import { observer } from 'mobx-react-lite';
+import { MonsterAttribute } from '@/enums/MonsterAttribute';
+import { getCdnImage, typedMerge } from '@/utils';
+import NumberInput from '@/app/components/generic/NumberInput';
 import {
   GUARDIAN_IDS,
   MONSTER_PHASES_BY_ID,
   PARTY_SIZE_REQUIRED_MONSTER_IDS,
   TOMBS_OF_AMASCUT_MONSTER_IDS,
   TOMBS_OF_AMASCUT_PATH_MONSTER_IDS,
-} from "@/lib/constants";
+} from '@/lib/constants';
 import {
   IconChevronDown,
   IconChevronUp,
   IconPlus,
   IconTrash,
-} from "@tabler/icons-react";
-import { scaleMonster } from "@/lib/MonsterScaling";
-import { Monster, MonsterCombatStyle } from "@/types/Monster";
-import LazyImage from "@/app/components/generic/LazyImage";
-import Toggle from "@/app/components/generic/Toggle";
-import { toJS } from "mobx";
-import DefensiveReductions from "@/app/components/monster/DefensiveReductions";
-import Select from "@/app/components/generic/Select";
-import { INITIAL_MONSTER_INPUTS } from "@/lib/Monsters";
-import MonsterSelect from "./MonsterSelect";
+} from '@tabler/icons-react';
+import { scaleMonster } from '@/lib/MonsterScaling';
+import { Monster, MonsterCombatStyle } from '@/types/Monster';
+import LazyImage from '@/app/components/generic/LazyImage';
+import Toggle from '@/app/components/generic/Toggle';
+import { toJS } from 'mobx';
+import DefensiveReductions from '@/app/components/monster/DefensiveReductions';
+import Select from '@/app/components/generic/Select';
+import { INITIAL_MONSTER_INPUTS } from '@/lib/Monsters';
+import MonsterSelect from './MonsterSelect';
 
 interface ComparisonMonsterSlot {
   id: number;
@@ -54,7 +54,7 @@ interface ITombsOfAmascutMonsterContainerProps {
 }
 
 const TombsOfAmascutMonsterContainer: React.FC<
-  ITombsOfAmascutMonsterContainerProps
+ITombsOfAmascutMonsterContainerProps
 > = (props) => {
   const { monster, onUpdateMonster, isPathMonster } = props;
 
@@ -62,7 +62,9 @@ const TombsOfAmascutMonsterContainer: React.FC<
     <>
       <div>
         <h4 className="font-bold font-serif">
-          <img src={toaRaidLevel.src} alt="" className="inline-block" /> ToA
+          <img src={toaRaidLevel.src} alt="" className="inline-block" />
+          {' '}
+          ToA
           raid level
         </h4>
         <div className="mt-2">
@@ -72,9 +74,7 @@ const TombsOfAmascutMonsterContainer: React.FC<
             max={700}
             step={5}
             commitOnBlur
-            onChange={(v) =>
-              onUpdateMonster({ inputs: { toaInvocationLevel: v } })
-            }
+            onChange={(v) => onUpdateMonster({ inputs: { toaInvocationLevel: v } })}
             required
           />
         </div>
@@ -82,7 +82,9 @@ const TombsOfAmascutMonsterContainer: React.FC<
       {isPathMonster && (
         <div className="mt-4">
           <h4 className="font-bold font-serif">
-            <img src={toaRaidLevel.src} alt="" className="inline-block" /> ToA
+            <img src={toaRaidLevel.src} alt="" className="inline-block" />
+            {' '}
+            ToA
             path level
           </h4>
           <div className="mt-2">
@@ -111,15 +113,14 @@ interface MonsterSettingsOptionsParams {
 }
 
 const COMBAT_STYLE_OPTIONS: { label: string; value: MonsterCombatStyle }[] = [
-  { label: "Crush", value: "crush" },
-  { label: "Stab", value: "stab" },
-  { label: "Slash", value: "slash" },
-  { label: "Magic", value: "magic" },
-  { label: "Ranged", value: "ranged" },
+  { label: 'Crush', value: 'crush' },
+  { label: 'Stab', value: 'stab' },
+  { label: 'Slash', value: 'slash' },
+  { label: 'Magic', value: 'magic' },
+  { label: 'Ranged', value: 'ranged' },
 ];
 
-const getMonsterKey = (monster: Pick<Monster, "id" | "version">) =>
-  `${monster.id}:${monster.version || ""}`;
+const getMonsterKey = (monster: Pick<Monster, 'id' | 'version'>) => `${monster.id}:${monster.version || ''}`;
 
 const getMonsterSettingsOptions = (
   params: MonsterSettingsOptionsParams,
@@ -188,7 +189,9 @@ const getMonsterSettingsOptions = (
     comps.push(
       <div key="cox-cm">
         <h4 className="font-bold font-serif">
-          <img src={coxCmIcon.src} alt="" className="inline-block" /> Challenge
+          <img src={coxCmIcon.src} alt="" className="inline-block" />
+          {' '}
+          Challenge
           Mode
         </h4>
         <div className="mt-2">
@@ -202,13 +205,15 @@ const getMonsterSettingsOptions = (
   }
 
   if (
-    PARTY_SIZE_REQUIRED_MONSTER_IDS.includes(monster.id) ||
-    monster.attributes.includes(MonsterAttribute.XERICIAN)
+    PARTY_SIZE_REQUIRED_MONSTER_IDS.includes(monster.id)
+    || monster.attributes.includes(MonsterAttribute.XERICIAN)
   ) {
     comps.push(
       <div key="party-size">
         <h4 className="font-bold font-serif">
-          <img src={raidsIcon.src} alt="" className="inline-block" /> Party size
+          <img src={raidsIcon.src} alt="" className="inline-block" />
+          {' '}
+          Party size
         </h4>
         <div className="mt-2">
           <NumberInput
@@ -229,7 +234,8 @@ const getMonsterSettingsOptions = (
     comps.push(
       <div key="cox-cb">
         <h4 className="font-bold font-serif">
-          <img src={raidsIcon.src} alt="" className="inline-block" />{" "}
+          <img src={raidsIcon.src} alt="" className="inline-block" />
+          {' '}
           Party&apos;s highest combat level
         </h4>
         <div className="mt-2">
@@ -238,9 +244,7 @@ const getMonsterSettingsOptions = (
             min={3}
             max={126}
             step={1}
-            onChange={(v) =>
-              updateMonster({ inputs: { partyMaxCombatLevel: v } })
-            }
+            onChange={(v) => updateMonster({ inputs: { partyMaxCombatLevel: v } })}
             required
           />
         </div>
@@ -250,7 +254,8 @@ const getMonsterSettingsOptions = (
     comps.push(
       <div key="cox-hp">
         <h4 className="font-bold font-serif">
-          <img src={raidsIcon.src} alt="" className="inline-block" />{" "}
+          <img src={raidsIcon.src} alt="" className="inline-block" />
+          {' '}
           Party&apos;s highest HP level
         </h4>
         <div className="mt-2">
@@ -271,8 +276,11 @@ const getMonsterSettingsOptions = (
     comps.push(
       <div key="cox-guardian">
         <h4 className="font-bold font-serif">
-          <img src={mining.src} alt="" className="inline-block" /> Party&apos;s
-          sum of mining levels{" "}
+          <img src={mining.src} alt="" className="inline-block" />
+          {' '}
+          Party&apos;s
+          sum of mining levels
+          {' '}
           <span
             className="align-super underline decoration-dotted cursor-help text-xs text-gray-300"
             data-tooltip-id="tooltip"
@@ -287,9 +295,7 @@ const getMonsterSettingsOptions = (
             min={1}
             max={9900}
             step={1}
-            onChange={(v) =>
-              updateMonster({ inputs: { partySumMiningLevel: v } })
-            }
+            onChange={(v) => updateMonster({ inputs: { partySumMiningLevel: v } })}
             required
           />
         </div>
@@ -310,9 +316,7 @@ const getMonsterSettingsOptions = (
               (opt) => opt.label === monster.inputs.phase,
             )}
             resetAfterSelect
-            onSelectedItemChange={(v) =>
-              updateMonster({ inputs: { phase: v?.label } })
-            }
+            onSelectedItemChange={(v) => updateMonster({ inputs: { phase: v?.label } })}
           />
         </div>
       </div>,
@@ -323,7 +327,9 @@ const getMonsterSettingsOptions = (
     comps.push(
       <div key="demonbane-effectiveness">
         <h4 className="font-bold font-serif">
-          <img src={demon.src} alt="" className="inline-block" /> Demonbane
+          <img src={demon.src} alt="" className="inline-block" />
+          {' '}
+          Demonbane
           effectiveness
         </h4>
         <div className="mt-2">
@@ -332,9 +338,7 @@ const getMonsterSettingsOptions = (
             min={0}
             max={10000}
             step={1}
-            onChange={(v) =>
-              updateMonster({ inputs: { demonbaneVulnerability: v } })
-            }
+            onChange={(v) => updateMonster({ inputs: { demonbaneVulnerability: v } })}
           />
           %
         </div>
@@ -345,7 +349,8 @@ const getMonsterSettingsOptions = (
   comps.push(
     <div key="monster-current-hp">
       <h4 className="font-bold font-serif">
-        <img src={hitpoints.src} alt="" className="inline-block" />{" "}
+        <img src={hitpoints.src} alt="" className="inline-block" />
+        {' '}
         Monster&apos;s current HP
       </h4>
       <div className="mt-2">
@@ -370,7 +375,7 @@ const toComparisonMonster = (monster: Partial<Monster>): Monster | null => {
   }
 
   return {
-    ...(monster as Omit<Monster, "inputs">),
+    ...(monster as Omit<Monster, 'inputs'>),
     inputs: {
       ...INITIAL_MONSTER_INPUTS,
       monsterCurrentHp: monster.skills.hp,
@@ -403,13 +408,11 @@ const ComparisonMonsterSlotCard: React.FC<ComparisonMonsterSlotCardProps> = (
   const monster = slot.monster;
 
   const excludedMonsters = useMemo(
-    () =>
-      [primaryMonster, ...selectedComparisonMonsters]
-        .filter(
-          (entry) =>
-            !monster || getMonsterKey(entry) !== getMonsterKey(monster),
-        )
-        .map((entry) => ({ id: entry.id, version: entry.version })),
+    () => [primaryMonster, ...selectedComparisonMonsters]
+      .filter(
+        (entry) => !monster || getMonsterKey(entry) !== getMonsterKey(monster),
+      )
+      .map((entry) => ({ id: entry.id, version: entry.version })),
     [monster, primaryMonster, selectedComparisonMonsters],
   );
 
@@ -440,7 +443,7 @@ const ComparisonMonsterSlotCard: React.FC<ComparisonMonsterSlotCardProps> = (
   };
 
   useEffect(() => {
-    if (monster && phases && !phases.includes(monster.inputs.phase || "")) {
+    if (monster && phases && !phases.includes(monster.inputs.phase || '')) {
       updateComparisonMonster({ inputs: { phase: phases[0] } });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -448,9 +451,9 @@ const ComparisonMonsterSlotCard: React.FC<ComparisonMonsterSlotCardProps> = (
 
   useEffect(() => {
     if (
-      monster &&
-      displayMonster &&
-      monster.inputs.monsterCurrentHp !== displayMonster.skills.hp
+      monster
+      && displayMonster
+      && monster.inputs.monsterCurrentHp !== displayMonster.skills.hp
     ) {
       updateComparisonMonster({
         inputs: { monsterCurrentHp: displayMonster.skills.hp },
@@ -459,16 +462,15 @@ const ComparisonMonsterSlotCard: React.FC<ComparisonMonsterSlotCardProps> = (
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [displayMonster?.skills.hp, monster?.id, slot.id]);
 
-  const extraMonsterOptions =
-    !monster || !displayMonster
-      ? []
-      : getMonsterSettingsOptions({
-          displayMonster,
-          isCustomMonster,
-          monster,
-          phaseOptions,
-          updateMonster: updateComparisonMonster,
-        });
+  const extraMonsterOptions = !monster || !displayMonster
+    ? []
+    : getMonsterSettingsOptions({
+      displayMonster,
+      isCustomMonster,
+      monster,
+      phaseOptions,
+      updateMonster: updateComparisonMonster,
+    });
 
   return (
     <div className="rounded bg-body-100 px-3 py-3 dark:bg-dark-500">
@@ -479,18 +481,20 @@ const ComparisonMonsterSlotCard: React.FC<ComparisonMonsterSlotCardProps> = (
               <LazyImage
                 responsive
                 src={getCdnImage(`monsters/${monster.image}`)}
-                alt={monster.name || "Unknown"}
+                alt={monster.name || 'Unknown'}
               />
             </div>
           )}
           <div>
             <div className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-300">
-              NPC {index + 2}
+              NPC
+              {' '}
+              {index + 2}
             </div>
             <div className="mt-1 text-sm font-semibold text-black dark:text-white">
               {monster
-                ? `${monster.name}${monster.version ? ` #${monster.version}` : ""}`
-                : "Not selected"}
+                ? `${monster.name}${monster.version ? ` #${monster.version}` : ''}`
+                : 'Not selected'}
             </div>
           </div>
         </div>
@@ -506,7 +510,7 @@ const ComparisonMonsterSlotCard: React.FC<ComparisonMonsterSlotCardProps> = (
       <div className="mt-3">
         <MonsterSelect
           id={`comparison-monster-select-${slot.id}`}
-          placeholder={monster ? "Replace NPC..." : "Add NPC..."}
+          placeholder={monster ? 'Replace NPC...' : 'Add NPC...'}
           includeCustomMonster={false}
           excludedMonsters={excludedMonsters}
           onSelectedMonsterChange={(nextMonster) => {
@@ -523,7 +527,7 @@ const ComparisonMonsterSlotCard: React.FC<ComparisonMonsterSlotCardProps> = (
             <div className="rounded bg-white dark:bg-dark-400">
               <button
                 type="button"
-                className={`w-full pt-1 border-b-body-400 dark:border-b-dark-300 px-2 flex text-gray-500 dark:text-gray-300 font-semibold justify-between gap-2 ${settingsExpanded ? "border-b" : ""}`}
+                className={`w-full pt-1 border-b-body-400 dark:border-b-dark-300 px-2 flex text-gray-500 dark:text-gray-300 font-semibold justify-between gap-2 ${settingsExpanded ? 'border-b' : ''}`}
                 onClick={() => setSettingsExpanded(!settingsExpanded)}
               >
                 <div>Monster Settings</div>
@@ -577,7 +581,7 @@ const MonsterContainer: React.FC<MonsterContainerProps> = observer((props) => {
 
   useEffect(() => {
     // When display monster name is changed, reset the phase option selection
-    if (phases && !phases?.includes(store.monster.inputs.phase || "")) {
+    if (phases && !phases?.includes(store.monster.inputs.phase || '')) {
       store.updateMonster({ inputs: { phase: phases?.[0] } });
     }
   }, [store, phases]);
@@ -594,8 +598,8 @@ const MonsterContainer: React.FC<MonsterContainerProps> = observer((props) => {
   useEffect(() => {
     // When display monster HP or NPC ID is changed, update the monster's current HP
     if (
-      store.monster.inputs.monsterCurrentHp !== displayMonster.skills.hp ||
-      store.monster.id !== displayMonster.id
+      store.monster.inputs.monsterCurrentHp !== displayMonster.skills.hp
+      || store.monster.id !== displayMonster.id
     ) {
       store.updateMonster({
         inputs: { monsterCurrentHp: displayMonster.skills.hp },
@@ -604,22 +608,18 @@ const MonsterContainer: React.FC<MonsterContainerProps> = observer((props) => {
   }, [store, displayMonster.skills.hp, displayMonster.id]);
 
   const selectedComparisonMonsters = useMemo(
-    () =>
-      comparisonMonsterSlots.flatMap((slot) =>
-        slot.monster ? [slot.monster] : [],
-      ),
+    () => comparisonMonsterSlots.flatMap((slot) => (slot.monster ? [slot.monster] : [])),
     [comparisonMonsterSlots],
   );
 
   const extraMonsterOptions = useMemo(
-    () =>
-      getMonsterSettingsOptions({
-        displayMonster,
-        isCustomMonster,
-        monster,
-        phaseOptions,
-        updateMonster: store.updateMonster,
-      }),
+    () => getMonsterSettingsOptions({
+      displayMonster,
+      isCustomMonster,
+      monster,
+      phaseOptions,
+      updateMonster: store.updateMonster,
+    }),
     [
       displayMonster,
       isCustomMonster,
@@ -634,9 +634,11 @@ const MonsterContainer: React.FC<MonsterContainerProps> = observer((props) => {
       <div className="bg-tile dark:bg-dark-300 sm:rounded-lg text-black dark:text-white shadow-lg">
         <div className="px-6 py-2 border-b-body-400 dark:border-b-dark-200 border-b md:rounded md:rounded-bl-none md:rounded-br-none flex justify-between items-center bg-body-100 dark:bg-dark-400">
           <h2 className="font-serif tracking-tight font-bold">
-            NPCs{" "}
+            NPCs
+            {' '}
             <span className="text-sm text-gray-500 dark:text-gray-300 font-normal">
-              ({1 + comparisonMonsterSlots.length}
+              (
+              {1 + comparisonMonsterSlots.length}
               /3)
             </span>
           </h2>
@@ -649,7 +651,7 @@ const MonsterContainer: React.FC<MonsterContainerProps> = observer((props) => {
                   <LazyImage
                     responsive
                     src={getCdnImage(`monsters/${monster.image}`)}
-                    alt={monster.name || "Unknown"}
+                    alt={monster.name || 'Unknown'}
                   />
                 </div>
               )}
@@ -659,8 +661,8 @@ const MonsterContainer: React.FC<MonsterContainerProps> = observer((props) => {
                 </div>
                 <div className="mt-1 text-sm font-semibold text-black dark:text-white">
                   {monster.name
-                    ? `${monster.name}${monster.version ? ` #${monster.version}` : ""}`
-                    : "Not selected"}
+                    ? `${monster.name}${monster.version ? ` #${monster.version}` : ''}`
+                    : 'Not selected'}
                 </div>
               </div>
             </div>
@@ -672,7 +674,7 @@ const MonsterContainer: React.FC<MonsterContainerProps> = observer((props) => {
                 <div className="rounded bg-white dark:bg-dark-400">
                   <button
                     type="button"
-                    className={`w-full pt-1 border-b-body-400 dark:border-b-dark-300 px-2 flex text-gray-500 dark:text-gray-300 font-semibold justify-between gap-2 ${optionsExpanded ? "border-b" : ""}`}
+                    className={`w-full pt-1 border-b-body-400 dark:border-b-dark-300 px-2 flex text-gray-500 dark:text-gray-300 font-semibold justify-between gap-2 ${optionsExpanded ? 'border-b' : ''}`}
                     onClick={() => setOptionsExpanded(!optionsExpanded)}
                   >
                     <div>Monster Settings</div>
