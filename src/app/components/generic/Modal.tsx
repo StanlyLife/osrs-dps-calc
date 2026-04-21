@@ -1,7 +1,7 @@
-import React, { Fragment, PropsWithChildren, ReactNode } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import { classNames } from '@/utils';
-import { IconX } from '@tabler/icons-react';
+import React, { Fragment, PropsWithChildren, ReactNode } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import { classNames } from "@/utils";
+import { IconX } from "@tabler/icons-react";
 
 interface IModalProps {
   isOpen: boolean;
@@ -14,7 +14,13 @@ interface IModalProps {
 
 const Modal: React.FC<PropsWithChildren<IModalProps>> = (props) => {
   const {
-    isOpen, setIsOpen, title, children, hideCloseButton, footerChildren, maxWidth,
+    isOpen,
+    setIsOpen,
+    title,
+    children,
+    hideCloseButton,
+    footerChildren,
+    maxWidth,
   } = props;
 
   return (
@@ -31,18 +37,20 @@ const Modal: React.FC<PropsWithChildren<IModalProps>> = (props) => {
       <Dialog className="relative z-50" onClose={() => setIsOpen(false)}>
         <div className="fixed inset-0 bg-black/60" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Dialog.Panel className={`w-full ${maxWidth ?? 'max-w-lg'} rounded-xl bg-white dark:bg-dark-300 dark:text-white text-black shadow-xl`}>
+          <Dialog.Panel
+            className={`w-full ${maxWidth ?? "max-w-lg"} rounded-xl bg-white dark:bg-dark-300 dark:text-white text-black shadow-xl`}
+          >
             <Dialog.Title className="py-3 text-md bg-btns-300 dark:bg-dark-500 font-bold rounded-t-lg text-center text-white font-serif select-none relative flex justify-center items-center">
               {title}
               {!hideCloseButton && (
                 <button
                   type="button"
                   className={classNames(
-                    'text-sm',
-                    'absolute',
-                    'right-4',
-                    'text-gray-400',
-                    'hover:text-white',
+                    "text-sm",
+                    "absolute",
+                    "right-4",
+                    "text-gray-400",
+                    "hover:text-white",
                   )}
                   aria-label="Close"
                   onClick={() => setIsOpen(false)}
@@ -51,7 +59,7 @@ const Modal: React.FC<PropsWithChildren<IModalProps>> = (props) => {
                 </button>
               )}
             </Dialog.Title>
-            <div className={`px-4 py-2 ${maxWidth ?? 'max-w-xl'} my-2 mx-auto`}>
+            <div className={`px-4 py-2 ${maxWidth ?? "max-w-xl"} my-2 mx-auto`}>
               {children}
             </div>
             {footerChildren && (

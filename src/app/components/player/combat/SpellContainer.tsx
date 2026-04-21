@@ -1,10 +1,10 @@
-import React, { useMemo } from 'react';
-import LazyImage from '@/app/components/generic/LazyImage';
-import { getWikiImage } from '@/utils';
-import { IconTrash } from '@tabler/icons-react';
-import { useStore } from '@/state';
-import { getSpellMaxHit } from '@/types/Spell';
-import { toJS } from 'mobx';
+import React, { useMemo } from "react";
+import LazyImage from "@/app/components/generic/LazyImage";
+import { getWikiImage } from "@/utils";
+import { IconTrash } from "@tabler/icons-react";
+import { useStore } from "@/state";
+import { getSpellMaxHit } from "@/types/Spell";
+import { toJS } from "mobx";
 
 const SpellContainer: React.FC = () => {
   const store = useStore();
@@ -28,16 +28,14 @@ const SpellContainer: React.FC = () => {
         )}
         <div>
           <div className="font-semibold">
-            {spell?.name || 'No spell selected'}
+            {spell?.name || "No spell selected"}
           </div>
           <div className="text-xs text-gray-400 dark:text-gray-300">
             {spell ? (
-              <span>
-                Max hit:
-                {' '}
-                {spellMaxHit}
-              </span>
-            ) : <span>If you are casting spells, select one below</span>}
+              <span>Max hit: {spellMaxHit}</span>
+            ) : (
+              <span>If you are casting spells, select one below</span>
+            )}
           </div>
         </div>
       </div>

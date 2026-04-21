@@ -1,9 +1,15 @@
 import { observer } from 'mobx-react-lite';
 import { useStore } from '@/state';
 import { DisplayEffect, getSpriteTile } from '@/app/components/player/demonicPactsLeague/SkillTreeNode';
-import { dbrowDefinitions } from '@/app/components/player/demonicPactsLeague/parse_skill_tree_elements';
+import { dbrowDefinitions, LeaguesEffect } from '@/app/components/player/demonicPactsLeague/parse_skill_tree_elements';
 import Image from 'next/image';
 import { getBackingIcon } from '@/app/components/player/demonicPactsLeague/icons';
+
+const DAMAGE_PACT_EFFECTS: LeaguesEffect[] = [
+  'talent_percentage_melee_damage',
+  'talent_percentage_ranged_damage',
+  'talent_percentage_magic_damage',
+];
 
 const combineEffectValues = (values: (number | '[Constant: true]')[]) => values.reduce((acc, value) => {
   if (value === '[Constant: true]' || acc === '[Constant: true]') {
@@ -11,6 +17,16 @@ const combineEffectValues = (values: (number | '[Constant: true]')[]) => values.
   }
   return acc + value;
 }, 0);
+
+const getDisplayName = (skillTreeNodeId: string, combinedValue: number | '[Constant: true]') => {
+  const node = dbrowDefinitions[skillTreeNodeId];
+  const { name } = node;
+  // Scale the +10% accuracy text for damage pacts when multiple are selected
+  if (DAMAGE_PACT_EFFECTS.includes(node.effect.name) && typeof combinedValue === 'number' && combinedValue > 1) {
+    return name.replace('+10%', `+${combinedValue * 10}%`);
+  }
+  return name;
+};
 
 const CurrentEffects = observer(() => {
   const store = useStore();
@@ -25,34 +41,37 @@ const CurrentEffects = observer(() => {
         ) : (
           <ul>
             {Array.from(store.currentEffects.values()).map(
-              ({ skillTreeNodeId, values }, ix) => (
-                <li
+              ({ skillTreeNodeId, values }, ix) => {
+                const combined = combineEffectValues(values);
+                return (
+                  <li
                     // eslint-disable-next-line react/no-array-index-key
-                  key={ix}
-                  className="effect-container p-2 bg-dark-300 border-b border-[#806f61] flex gap-2 items-center"
-                >
-                  <div
-                    className="bg-cover size-8 square min-size-12 aspect-square flex items-center justify-center"
-                    style={{
-                      backgroundImage: `url(${getBackingIcon(
-                        true,
-                        true,
-                        dbrowDefinitions[skillTreeNodeId].node_size,
-                      ).src})`,
-                    }}
+                    key={ix}
+                    className="effect-container p-2 bg-dark-300 border-b border-[#806f61] flex gap-2 items-center"
                   >
-                    <Image
-                      className="size-4/6 object-center object-contain aspect-square"
-                      src={getSpriteTile(skillTreeNodeId, true)}
-                      alt="Pact icon"
+                    <div
+                      className="bg-cover size-8 square min-size-12 aspect-square flex items-center justify-center"
+                      style={{
+                        backgroundImage: `url(${getBackingIcon(
+                          true,
+                          true,
+                          dbrowDefinitions[skillTreeNodeId].node_size,
+                        ).src})`,
+                      }}
+                    >
+                      <Image
+                        className="size-4/6 object-center object-contain aspect-square"
+                        src={getSpriteTile(skillTreeNodeId, true)}
+                        alt="Pact icon"
+                      />
+                    </div>
+                    <DisplayEffect
+                      name={getDisplayName(skillTreeNodeId, combined)}
+                      effectValue={combined}
                     />
-                  </div>
-                  <DisplayEffect
-                    name={dbrowDefinitions[skillTreeNodeId].name}
-                    effectValue={combineEffectValues(values)}
-                  />
-                </li>
-              ),
+                  </li>
+                );
+              },
             )}
           </ul>
         )}

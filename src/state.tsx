@@ -1211,26 +1211,24 @@ class GlobalState implements State {
 
     const selectedNodeIds = state.selectedNodeIds;
     const DAMAGE_PACT_EFFECTS: LeaguesEffect[] = [
-      "talent_percentage_melee_damage",
-      "talent_percentage_ranged_damage",
-      "talent_percentage_magic_damage",
+      'talent_percentage_melee_damage',
+      'talent_percentage_ranged_damage',
+      'talent_percentage_magic_damage',
     ];
     selectedNodeIds.forEach((id) => {
       const def = dbrowDefinitions[id];
       const prior = state.effects[def.effect.name] ?? 0;
-      const addend =
-        def.effect.value === "[Constant: true]" ? 1 : def.effect.value;
+      const addend = def.effect.value === '[Constant: true]' ? 1 : def.effect.value;
       state.effects[def.effect.name] = prior + addend;
 
       // Each +1% damage pact also grants +10% accuracy in all combat styles
       if (DAMAGE_PACT_EFFECTS.includes(def.effect.name)) {
-        state.effects.talent_all_style_accuracy =
-          (state.effects.talent_all_style_accuracy ?? 0) + 10;
+        state.effects.talent_all_style_accuracy = (state.effects.talent_all_style_accuracy ?? 0) + 10;
       }
     });
 
     console.debug(
-      "[GlobalState] recalculateLeaguesEffects",
+      '[GlobalState] recalculateLeaguesEffects',
       toJS(state.effects),
     );
 
@@ -1243,7 +1241,7 @@ class GlobalState implements State {
     string,
     {
       skillTreeNodeId: string;
-      values: (number | "[Constant: true]")[];
+      values: (number | '[Constant: true]')[];
     }
   > {
     const state = this.player.leagues.six;
@@ -1251,9 +1249,15 @@ class GlobalState implements State {
       string,
       {
         skillTreeNodeId: string;
-        values: (number | "[Constant: true]")[];
+        values: (number | '[Constant: true]')[];
       }
     >();
+    const DAMAGE_PACT_EFFECTS: LeaguesEffect[] = [
+      'talent_percentage_melee_damage',
+      'talent_percentage_ranged_damage',
+      'talent_percentage_magic_damage',
+    ];
+    let damagePactCount = 0;
     for (const id of state.selectedNodeIds) {
       const node = dbrowDefinitions[id];
       if (node) {
@@ -1270,6 +1274,29 @@ class GlobalState implements State {
           effects.set(node.effect.name, {
             skillTreeNodeId: id,
             values: [node.effect.value],
+          });
+        }
+        if (DAMAGE_PACT_EFFECTS.includes(node.effect.name)) {
+          damagePactCount += 1;
+        }
+      }
+    }
+    // Each damage pact also grants +10% accuracy in all combat styles
+    if (damagePactCount > 0) {
+      const accEntry = effects.get('talent_all_style_accuracy');
+      if (accEntry) {
+        for (let i = 0; i < damagePactCount; i++) {
+          accEntry.values.push(10);
+        }
+      } else {
+        // Find any accuracy node for icon/display, or use the first available node
+        const accNodeId = Object.keys(dbrowDefinitions).find(
+          (k) => dbrowDefinitions[k].effect.name === 'talent_all_style_accuracy',
+        );
+        if (accNodeId) {
+          effects.set('talent_all_style_accuracy', {
+            skillTreeNodeId: accNodeId,
+            values: Array(damagePactCount).fill(10),
           });
         }
       }

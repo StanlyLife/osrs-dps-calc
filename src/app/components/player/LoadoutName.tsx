@@ -1,5 +1,5 @@
-import { IconPencil } from '@tabler/icons-react';
-import React, { useCallback, useState } from 'react';
+import { IconPencil } from "@tabler/icons-react";
+import React, { useCallback, useState } from "react";
 
 interface LoadoutNameProps {
   name: string;
@@ -13,7 +13,9 @@ interface LoadoutNameEditContainerProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const LoadoutNameEditContainer: React.FC<LoadoutNameEditContainerProps> = (props) => {
+const LoadoutNameEditContainer: React.FC<LoadoutNameEditContainerProps> = (
+  props,
+) => {
   const { value, onSubmit, onChange } = props;
 
   const focusInput = useCallback((input: HTMLInputElement | null) => {
@@ -22,12 +24,24 @@ const LoadoutNameEditContainer: React.FC<LoadoutNameEditContainerProps> = (props
 
   return (
     <form className="flex gap-2 items-center w-full" onSubmit={onSubmit}>
-      <input type="text" className="form-control font-mono tracking-tighter" ref={focusInput} value={value} onChange={onChange} maxLength={24} onBlur={onSubmit} />
+      <input
+        type="text"
+        className="form-control font-mono tracking-tighter"
+        ref={focusInput}
+        value={value}
+        onChange={onChange}
+        maxLength={24}
+        onBlur={onSubmit}
+      />
     </form>
   );
 };
 
-const LoadoutName: React.FC<LoadoutNameProps> = ({ name, index, renameLoadout }) => {
+const LoadoutName: React.FC<LoadoutNameProps> = ({
+  name,
+  index,
+  renameLoadout,
+}) => {
   const [editName, setEditName] = useState(false);
   const [value, setValue] = useState(name);
   const [prevIndex, setPrevIndex] = useState(index);
@@ -50,7 +64,11 @@ const LoadoutName: React.FC<LoadoutNameProps> = ({ name, index, renameLoadout })
   };
 
   return editName ? (
-    <LoadoutNameEditContainer onSubmit={onSubmit} onChange={(e) => setValue(e.target.value)} value={value} />
+    <LoadoutNameEditContainer
+      onSubmit={onSubmit}
+      onChange={(e) => setValue(e.target.value)}
+      value={value}
+    />
   ) : (
     <div className="flex gap-2 items-center mr-8">
       <h2 className="tracking-tight font-bold overflow-hidden min-w-0 whitespace-nowrap">

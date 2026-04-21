@@ -1,12 +1,14 @@
-import Modal from '@/app/components/generic/Modal';
-import React, { PropsWithChildren, useState } from 'react';
-import { IconNews } from '@tabler/icons-react';
+import Modal from "@/app/components/generic/Modal";
+import React, { PropsWithChildren, useState } from "react";
+import { IconNews } from "@tabler/icons-react";
 
 interface IChangelogEntryProps {
   date: string;
 }
 
-const ChangelogEntry: React.FC<PropsWithChildren<IChangelogEntryProps>> = (props) => {
+const ChangelogEntry: React.FC<PropsWithChildren<IChangelogEntryProps>> = (
+  props,
+) => {
   const { date, children } = props;
 
   return (
@@ -42,31 +44,52 @@ const Changelog: React.FC = () => {
         <div className="text-sm bg-dark-500 rounded p-2 shadow-inner border border-dark-200 overflow-auto max-h-64">
           <ChangelogEntry date="14 April 2026">
             <li>
-              Added side-tab loadout management with support for up to 10 loadouts, drag-to-reorder tabs, keyboard shortcuts from 1 to 0, and loadout badges that show equipped weapons and selected League regions.
+              Added side-tab loadout management with support for up to 10
+              loadouts, drag-to-reorder tabs, keyboard shortcuts from 1 to 0,
+              and loadout badges that show equipped weapons and selected League
+              regions.
             </li>
             <li>
-              Added League region selection per loadout, persisted those regions through imports and shared state, and surfaced the chosen regions throughout the UI.
+              Added League region selection per loadout, persisted those regions
+              through imports and shared state, and surfaced the chosen regions
+              throughout the UI.
             </li>
             <li>
-              Reworked the monster panel so you can add up to two comparison NPCs, configure each one separately, and reuse monster settings and defensive reductions across those comparison cards.
+              Reworked the monster panel so you can add up to two comparison
+              NPCs, configure each one separately, and reuse monster settings
+              and defensive reductions across those comparison cards.
             </li>
             <li>
-              Simplified the results area into focused per-NPC tables, highlighted the best average TTK between loadouts, and removed the older hit-distribution, TTK graph, loadout-comparison, and NPC-vs-player result panels from the main flow.
+              Simplified the results area into focused per-NPC tables,
+              highlighted the best average TTK between loadouts, and removed the
+              older hit-distribution, TTK graph, loadout-comparison, and
+              NPC-vs-player result panels from the main flow.
             </li>
             <li>
-              Tuned several League-related combat calculations, including updated echo behavior handling and clearer per-loadout region context in the UI.
+              Tuned several League-related combat calculations, including
+              updated echo behavior handling and clearer per-loadout region
+              context in the UI.
             </li>
             <li>
-              Added Drygore blowpipe burn damage into DPS calculations and now warn when that burn is included in DPS but not yet reflected in TTK.
+              Added Drygore blowpipe burn damage into DPS calculations and now
+              warn when that burn is included in DPS but not yet reflected in
+              TTK.
             </li>
             <li>
-              Improved stability around startup and recalculation by preventing duplicate initial loads, discarding stale worker responses safely, and avoiding runaway TTK work for infinite-health or very large minion scenarios.
+              Improved stability around startup and recalculation by preventing
+              duplicate initial loads, discarding stale worker responses safely,
+              and avoiding runaway TTK work for infinite-health or very large
+              minion scenarios.
             </li>
             <li>
-              Updated imports and defaults so comparison monsters persist correctly and the app now opens on Gemstone Crab as the default NPC.
+              Updated imports and defaults so comparison monsters persist
+              correctly and the app now opens on Gemstone Crab as the default
+              NPC.
             </li>
             <li>
-              Removed the RuneLite WikiSync import flow from the current UI and trimmed the top bar actions to match the new comparison-focused workflow.
+              Removed the RuneLite WikiSync import flow from the current UI and
+              trimmed the top bar actions to match the new comparison-focused
+              workflow.
             </li>
           </ChangelogEntry>
         </div>
