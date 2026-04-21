@@ -1,34 +1,34 @@
-import { describe, expect, test } from '@jest/globals';
-import PlayerVsNPCCalc from '@/lib/PlayerVsNPCCalc';
-import { BurnImmunity } from '@/types/Monster';
+import { describe, expect, test } from "@jest/globals";
+import PlayerVsNPCCalc from "@/lib/PlayerVsNPCCalc";
+import { BurnImmunity } from "@/types/Monster";
 import {
   findEquipment,
   findEquipmentById,
   findSpell,
   getTestMonster,
   getTestPlayer,
-} from '@/tests/utils/TestUtils';
+} from "@/tests/utils/TestUtils";
 
-describe('demonic pact elemental spells', () => {
-  test('adds expected burn for fire spells', () => {
-    const monster = getTestMonster('Abyssal demon', 'Standard');
+describe("demonic pact elemental spells", () => {
+  test("adds expected burn for fire spells", () => {
+    const monster = getTestMonster("Abyssal demon", "Standard");
     const basePlayer = getTestPlayer(monster, {
-      spell: findSpell('Fire Bolt'),
+      spell: findSpell("Fire Bolt"),
       style: {
-        name: 'Spell',
-        type: 'magic',
-        stance: 'Manual Cast',
+        name: "Spell",
+        type: "magic",
+        stance: "Manual Cast",
       },
       skills: {
         magic: 99,
       },
     });
     const pactPlayer = getTestPlayer(monster, {
-      spell: findSpell('Fire Bolt'),
+      spell: findSpell("Fire Bolt"),
       style: {
-        name: 'Spell',
-        type: 'magic',
-        stance: 'Manual Cast',
+        name: "Spell",
+        type: "magic",
+        stance: "Manual Cast",
       },
       skills: {
         magic: 99,
@@ -43,17 +43,19 @@ describe('demonic pact elemental spells', () => {
     });
 
     expect(new PlayerVsNPCCalc(basePlayer, monster).getDoTExpected()).toBe(0);
-    expect(new PlayerVsNPCCalc(pactPlayer, monster).getDoTExpected()).toBeGreaterThan(0);
+    expect(
+      new PlayerVsNPCCalc(pactPlayer, monster).getDoTExpected(),
+    ).toBeGreaterThan(0);
   });
 
-  test('treats blood spells as fire when the pact conversion is active', () => {
-    const monster = getTestMonster('Abyssal demon', 'Standard');
+  test("treats blood spells as fire when the pact conversion is active", () => {
+    const monster = getTestMonster("Abyssal demon", "Standard");
     const withoutConversion = getTestPlayer(monster, {
-      spell: findSpell('Blood Blitz'),
+      spell: findSpell("Blood Blitz"),
       style: {
-        name: 'Spell',
-        type: 'magic',
-        stance: 'Manual Cast',
+        name: "Spell",
+        type: "magic",
+        stance: "Manual Cast",
       },
       skills: {
         magic: 99,
@@ -67,11 +69,11 @@ describe('demonic pact elemental spells', () => {
       },
     });
     const withConversion = getTestPlayer(monster, {
-      spell: findSpell('Blood Blitz'),
+      spell: findSpell("Blood Blitz"),
       style: {
-        name: 'Spell',
-        type: 'magic',
-        stance: 'Manual Cast',
+        name: "Spell",
+        type: "magic",
+        stance: "Manual Cast",
       },
       skills: {
         magic: 99,
@@ -86,22 +88,26 @@ describe('demonic pact elemental spells', () => {
       },
     });
 
-    expect(new PlayerVsNPCCalc(withoutConversion, monster).getDoTExpected()).toBe(0);
-    expect(new PlayerVsNPCCalc(withConversion, monster).getDoTExpected()).toBeGreaterThan(0);
+    expect(
+      new PlayerVsNPCCalc(withoutConversion, monster).getDoTExpected(),
+    ).toBe(0);
+    expect(
+      new PlayerVsNPCCalc(withConversion, monster).getDoTExpected(),
+    ).toBeGreaterThan(0);
   });
 
-  test('does not add fire spell burn against burn-immune monsters', () => {
-    const monster = getTestMonster('Abyssal demon', 'Standard', {
+  test("does not add fire spell burn against burn-immune monsters", () => {
+    const monster = getTestMonster("Abyssal demon", "Standard", {
       immunities: {
         burn: BurnImmunity.NORMAL,
       },
     });
     const player = getTestPlayer(monster, {
-      spell: findSpell('Fire Bolt'),
+      spell: findSpell("Fire Bolt"),
       style: {
-        name: 'Spell',
-        type: 'magic',
-        stance: 'Manual Cast',
+        name: "Spell",
+        type: "magic",
+        stance: "Manual Cast",
       },
       skills: {
         magic: 99,
@@ -118,8 +124,8 @@ describe('demonic pact elemental spells', () => {
     expect(new PlayerVsNPCCalc(player, monster).getDoTExpected()).toBe(0);
   });
 
-  test('does not apply the water high-hp bonus to King\'s barrage when ice counts as water', () => {
-    const monster = getTestMonster('Abyssal demon', 'Standard');
+  test("does not apply the water high-hp bonus to King's barrage when ice counts as water", () => {
+    const monster = getTestMonster("Abyssal demon", "Standard");
     const basePlayer = getTestPlayer(monster, {
       equipment: {
         weapon: findEquipment("King's barrage"),
@@ -169,18 +175,25 @@ describe('demonic pact elemental spells', () => {
     const baseExpected = new PlayerVsNPCCalc(basePlayer, monster)
       .getDistribution()
       .getExpectedDamage();
-    const noConversionExpected = new PlayerVsNPCCalc(noConversionPlayer, monster)
+    const noConversionExpected = new PlayerVsNPCCalc(
+      noConversionPlayer,
+      monster,
+    )
       .getDistribution()
       .getExpectedDamage();
     const convertedExpected = new PlayerVsNPCCalc(convertedPlayer, monster)
       .getDistribution()
       .getExpectedDamage();
 
-    const getMaxKingBarragePair = (player: Parameters<typeof getTestPlayer>[1]) => {
+    const getMaxKingBarragePair = (
+      player: Parameters<typeof getTestPlayer>[1],
+    ) => {
       const calc = new PlayerVsNPCCalc(getTestPlayer(monster, player), monster);
-      return calc.getDistribution().zipped.hits.reduce((best, current) => (
-        current.getSum() > best.getSum() ? current : best
-      ));
+      return calc
+        .getDistribution()
+        .zipped.hits.reduce((best, current) =>
+          current.getSum() > best.getSum() ? current : best,
+        );
     };
 
     const basePair = getMaxKingBarragePair({
@@ -214,7 +227,11 @@ describe('demonic pact elemental spells', () => {
 
     expect(noConversionExpected).toBe(baseExpected);
     expect(convertedExpected).toBe(baseExpected);
-    expect(convertedPair.hitsplats[0].damage).toBe(basePair.hitsplats[0].damage);
-    expect(convertedPair.hitsplats[1].damage).toBe(basePair.hitsplats[1].damage);
+    expect(convertedPair.hitsplats[0].damage).toBe(
+      basePair.hitsplats[0].damage,
+    );
+    expect(convertedPair.hitsplats[1].damage).toBe(
+      basePair.hitsplats[1].damage,
+    );
   });
 });
