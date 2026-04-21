@@ -1,5 +1,5 @@
-import { IconPencil } from "@tabler/icons-react";
-import React, { useCallback, useState } from "react";
+import { IconPencil } from '@tabler/icons-react';
+import React, { useCallback, useState } from 'react';
 
 interface LoadoutNameProps {
   name: string;

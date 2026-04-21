@@ -1,6 +1,6 @@
-import Modal from "@/app/components/generic/Modal";
-import React, { PropsWithChildren, useState } from "react";
-import { IconNews } from "@tabler/icons-react";
+import Modal from '@/app/components/generic/Modal';
+import React, { PropsWithChildren, useState } from 'react';
+import { IconNews } from '@tabler/icons-react';
 
 interface IChangelogEntryProps {
   date: string;

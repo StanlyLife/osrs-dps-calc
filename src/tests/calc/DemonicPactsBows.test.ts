@@ -1,20 +1,20 @@
-import { describe, expect, test } from "@jest/globals";
-import PlayerVsNPCCalc from "@/lib/PlayerVsNPCCalc";
-import { EquipmentCategory } from "@/enums/EquipmentCategory";
-import { getCombatStylesForCategory } from "@/utils";
+import { describe, expect, test } from '@jest/globals';
+import PlayerVsNPCCalc from '@/lib/PlayerVsNPCCalc';
+import { EquipmentCategory } from '@/enums/EquipmentCategory';
+import { getCombatStylesForCategory } from '@/utils';
 import {
   findEquipment,
   findEquipmentById,
   getTestMonster,
   getTestPlayer,
-} from "@/tests/utils/TestUtils";
+} from '@/tests/utils/TestUtils';
 
-describe("demonic pact bow repeat-hit stacks", () => {
-  test("caps bow max-hit stacks at 15% of base max hit", () => {
-    const monster = getTestMonster("Abyssal demon", "Standard");
+describe('demonic pact bow repeat-hit stacks', () => {
+  test('caps bow max-hit stacks at 15% of base max hit', () => {
+    const monster = getTestMonster('Abyssal demon', 'Standard');
     const basePlayer = getTestPlayer(monster, {
       equipment: {
-        weapon: findEquipment("Bow of faerdhinen"),
+        weapon: findEquipment('Bow of faerdhinen'),
       },
       style: getCombatStylesForCategory(EquipmentCategory.BOW)[1],
       skills: {
@@ -26,7 +26,7 @@ describe("demonic pact bow repeat-hit stacks", () => {
 
     const stackedPlayer = getTestPlayer(monster, {
       equipment: {
-        weapon: findEquipment("Bow of faerdhinen"),
+        weapon: findEquipment('Bow of faerdhinen'),
       },
       style: getCombatStylesForCategory(EquipmentCategory.BOW)[1],
       skills: {
@@ -50,11 +50,11 @@ describe("demonic pact bow repeat-hit stacks", () => {
     );
   });
 
-  test("applies current bow stacks to min-hit bonus for bows", () => {
-    const monster = getTestMonster("Abyssal demon", "Standard");
+  test('applies current bow stacks to min-hit bonus for bows', () => {
+    const monster = getTestMonster('Abyssal demon', 'Standard');
     const basePlayer = getTestPlayer(monster, {
       equipment: {
-        weapon: findEquipment("Bow of faerdhinen"),
+        weapon: findEquipment('Bow of faerdhinen'),
       },
       style: getCombatStylesForCategory(EquipmentCategory.BOW)[1],
       skills: {
@@ -66,7 +66,7 @@ describe("demonic pact bow repeat-hit stacks", () => {
 
     const player = getTestPlayer(monster, {
       equipment: {
-        weapon: findEquipment("Bow of faerdhinen"),
+        weapon: findEquipment('Bow of faerdhinen'),
       },
       style: getCombatStylesForCategory(EquipmentCategory.BOW)[1],
       skills: {
@@ -89,11 +89,11 @@ describe("demonic pact bow repeat-hit stacks", () => {
     expect(maxHit).toBe(baseMaxHit);
   });
 
-  test("does not apply repeat-hit bow stacks to non-bow ranged weapons", () => {
-    const monster = getTestMonster("Abyssal demon", "Standard");
+  test('does not apply repeat-hit bow stacks to non-bow ranged weapons', () => {
+    const monster = getTestMonster('Abyssal demon', 'Standard');
     const basePlayer = getTestPlayer(monster, {
       equipment: {
-        weapon: findEquipment("Rune crossbow"),
+        weapon: findEquipment('Rune crossbow'),
         ammo: findEquipmentById(9144),
       },
       style: getCombatStylesForCategory(EquipmentCategory.CROSSBOW)[1],
@@ -105,7 +105,7 @@ describe("demonic pact bow repeat-hit stacks", () => {
 
     const stackedPlayer = getTestPlayer(monster, {
       equipment: {
-        weapon: findEquipment("Rune crossbow"),
+        weapon: findEquipment('Rune crossbow'),
         ammo: findEquipmentById(9144),
       },
       style: getCombatStylesForCategory(EquipmentCategory.CROSSBOW)[1],
@@ -127,11 +127,11 @@ describe("demonic pact bow repeat-hit stacks", () => {
     expect(stackedCalc.getMinAndMax()).toStrictEqual(baseCalc.getMinAndMax());
   });
 
-  test("does not apply repeat-hit bow stacks to Eclipse atlatl", () => {
-    const monster = getTestMonster("Abyssal demon", "Standard");
+  test('does not apply repeat-hit bow stacks to Eclipse atlatl', () => {
+    const monster = getTestMonster('Abyssal demon', 'Standard');
     const basePlayer = getTestPlayer(monster, {
       equipment: {
-        weapon: findEquipment("Eclipse atlatl"),
+        weapon: findEquipment('Eclipse atlatl'),
       },
       style: getCombatStylesForCategory(EquipmentCategory.BOW)[1],
       skills: {
@@ -142,7 +142,7 @@ describe("demonic pact bow repeat-hit stacks", () => {
 
     const stackedPlayer = getTestPlayer(monster, {
       equipment: {
-        weapon: findEquipment("Eclipse atlatl"),
+        weapon: findEquipment('Eclipse atlatl'),
       },
       style: getCombatStylesForCategory(EquipmentCategory.BOW)[1],
       skills: {

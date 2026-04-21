@@ -1,25 +1,25 @@
-import { describe, expect, test } from "@jest/globals";
+import { describe, expect, test } from '@jest/globals';
 import {
   calculatePlayerVsNpc,
   findEquipment,
   findEquipmentById,
   getTestMonster,
   getTestPlayer,
-} from "@/tests/utils/TestUtils";
-import { DetailKey } from "@/lib/CalcDetails";
-import { Prayer } from "@/enums/Prayer";
-import { PartialDeep } from "type-fest";
-import { Player } from "@/types/Player";
+} from '@/tests/utils/TestUtils';
+import { DetailKey } from '@/lib/CalcDetails';
+import { Prayer } from '@/enums/Prayer';
+import { PartialDeep } from 'type-fest';
+import { Player } from '@/types/Player';
 
-describe("Prayers", () => {
-  const monster = getTestMonster("Abyssal demon", "Standard");
+describe('Prayers', () => {
+  const monster = getTestMonster('Abyssal demon', 'Standard');
 
-  describe("Burst of Strength", () => {
+  describe('Burst of Strength', () => {
     const basePlayer: PartialDeep<Player> = {
       prayers: [Prayer.BURST_OF_STRENGTH],
     };
 
-    test("level 10 strength", () => {
+    test('level 10 strength', () => {
       const player = getTestPlayer(monster, {
         ...basePlayer,
         skills: { str: 10 },
@@ -30,7 +30,7 @@ describe("Prayers", () => {
       ).toBe(11);
     });
 
-    test("level 99 strength", () => {
+    test('level 99 strength', () => {
       const player = getTestPlayer(monster, {
         ...basePlayer,
         skills: { str: 99 },
@@ -42,7 +42,7 @@ describe("Prayers", () => {
     });
   });
 
-  describe("Sharp Eye", () => {
+  describe('Sharp Eye', () => {
     const basePlayer: PartialDeep<Player> = {
       prayers: [Prayer.SHARP_EYE],
       equipment: {
@@ -50,13 +50,13 @@ describe("Prayers", () => {
         ammo: findEquipmentById(21905),
       },
       style: {
-        name: "Rapid",
-        type: "ranged",
-        stance: "Rapid",
+        name: 'Rapid',
+        type: 'ranged',
+        stance: 'Rapid',
       },
     };
 
-    test("level 10 ranged", () => {
+    test('level 10 ranged', () => {
       const player = getTestPlayer(monster, {
         ...basePlayer,
         skills: { ranged: 10 },
@@ -67,7 +67,7 @@ describe("Prayers", () => {
       ).toBe(11);
     });
 
-    test("level 99 ranged", () => {
+    test('level 99 ranged', () => {
       const player = getTestPlayer(monster, {
         ...basePlayer,
         skills: { ranged: 99 },
@@ -79,7 +79,7 @@ describe("Prayers", () => {
     });
   });
 
-  describe("buffed ranged prayers", () => {
+  describe('buffed ranged prayers', () => {
     const basePlayer: PartialDeep<Player> = {
       prayers: [Prayer.EAGLE_EYE],
       equipment: {
@@ -87,16 +87,16 @@ describe("Prayers", () => {
         ammo: findEquipmentById(21905),
       },
       style: {
-        name: "Rapid",
-        type: "ranged",
-        stance: "Rapid",
+        name: 'Rapid',
+        type: 'ranged',
+        stance: 'Rapid',
       },
       skills: {
         ranged: 99,
       },
     };
 
-    test("increases ranged prayer-derived levels", () => {
+    test('increases ranged prayer-derived levels', () => {
       const baseDetails = calculatePlayerVsNpc(
         monster,
         getTestPlayer(monster, basePlayer),
@@ -136,24 +136,24 @@ describe("Prayers", () => {
     });
   });
 
-  describe("enemy protection prayers", () => {
+  describe('enemy protection prayers', () => {
     const basePlayer: PartialDeep<Player> = {
       equipment: {
-        cape: findEquipment("Dizana's quiver", "Charged"),
-        weapon: findEquipment("Twisted bow"),
-        ammo: findEquipment("Dragon arrow", "Unpoisoned"),
+        cape: findEquipment("Dizana's quiver", 'Charged'),
+        weapon: findEquipment('Twisted bow'),
+        ammo: findEquipment('Dragon arrow', 'Unpoisoned'),
       },
       style: {
-        name: "Rapid",
-        type: "ranged",
-        stance: "Rapid",
+        name: 'Rapid',
+        type: 'ranged',
+        stance: 'Rapid',
       },
       skills: {
         ranged: 99,
       },
     };
 
-    test("prayer penetration lets ranged damage pass through ranged protection prayers", () => {
+    test('prayer penetration lets ranged damage pass through ranged protection prayers', () => {
       const unprotected = calculatePlayerVsNpc(
         monster,
         getTestPlayer(monster, basePlayer),
