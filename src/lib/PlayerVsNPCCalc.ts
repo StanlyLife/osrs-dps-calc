@@ -2614,15 +2614,9 @@ export default class PlayerVsNPCCalc extends BaseCalc {
           const rangedDist = new HitDistribution([
             new WeightedHit(1.0, [rangedSplat]),
           ]).transform(this.applyNpcTransforms('ranged'));
-          let iceDist = new HitDistribution([
+          const iceDist = new HitDistribution([
             new WeightedHit(1.0, [iceSplat]),
           ]).transform(this.applyNpcTransforms('magic'));
-          if (
-            this.player.leagues.six.effects.talent_water_spell_damage_high_hp
-            && this.player.leagues.six.effects.talent_ice_counts_as_water
-          ) {
-            iceDist = iceDist.transform(this.leaguesWaterHpBonus());
-          }
           return rangedDist.zip(iceDist);
         },
         { transformInaccurate: true },

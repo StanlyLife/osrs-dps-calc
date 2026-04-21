@@ -54,6 +54,7 @@ import { spellByName } from '@/types/Spell';
 import { DEFAULT_ATTACK_SPEED, NUMBER_OF_LOADOUTS } from '@/lib/constants';
 import {
   dbrowDefinitions,
+  LeaguesEffect,
   rootNode,
 } from '@/app/components/player/demonicPactsLeague/parse_skill_tree_elements';
 import { EquipmentCategory } from './enums/EquipmentCategory';
@@ -1189,11 +1190,21 @@ class GlobalState implements State {
     state.effects = {};
 
     const selectedNodeIds = state.selectedNodeIds;
+    const DAMAGE_PACT_EFFECTS: LeaguesEffect[] = [
+      'talent_percentage_melee_damage',
+      'talent_percentage_ranged_damage',
+      'talent_percentage_magic_damage',
+    ];
     selectedNodeIds.forEach((id) => {
       const def = dbrowDefinitions[id];
       const prior = state.effects[def.effect.name] ?? 0;
       const addend = def.effect.value === '[Constant: true]' ? 1 : def.effect.value;
       state.effects[def.effect.name] = prior + addend;
+
+      // Each +1% damage pact also grants +10% accuracy in all combat styles
+      if (DAMAGE_PACT_EFFECTS.includes(def.effect.name)) {
+        state.effects.talent_all_style_accuracy = (state.effects.talent_all_style_accuracy ?? 0) + 10;
+      }
     });
 
     console.debug(

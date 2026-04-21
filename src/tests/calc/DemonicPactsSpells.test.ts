@@ -1,7 +1,13 @@
 import { describe, expect, test } from '@jest/globals';
 import PlayerVsNPCCalc from '@/lib/PlayerVsNPCCalc';
 import { BurnImmunity } from '@/types/Monster';
-import { findSpell, getTestMonster, getTestPlayer } from '@/tests/utils/TestUtils';
+import {
+  findEquipment,
+  findEquipmentById,
+  findSpell,
+  getTestMonster,
+  getTestPlayer,
+} from '@/tests/utils/TestUtils';
 
 describe('demonic pact elemental spells', () => {
   test('adds expected burn for fire spells', () => {
@@ -110,5 +116,105 @@ describe('demonic pact elemental spells', () => {
     });
 
     expect(new PlayerVsNPCCalc(player, monster).getDoTExpected()).toBe(0);
+  });
+
+  test('does not apply the water high-hp bonus to King\'s barrage when ice counts as water', () => {
+    const monster = getTestMonster('Abyssal demon', 'Standard');
+    const basePlayer = getTestPlayer(monster, {
+      equipment: {
+        weapon: findEquipment("King's barrage"),
+        ammo: findEquipmentById(9144),
+      },
+      skills: {
+        ranged: 99,
+        hp: 99,
+      },
+    });
+    const noConversionPlayer = getTestPlayer(monster, {
+      equipment: {
+        weapon: findEquipment("King's barrage"),
+        ammo: findEquipmentById(9144),
+      },
+      skills: {
+        ranged: 99,
+        hp: 99,
+      },
+      leagues: {
+        six: {
+          effects: {
+            talent_water_spell_damage_high_hp: 1,
+          },
+        },
+      },
+    });
+    const convertedPlayer = getTestPlayer(monster, {
+      equipment: {
+        weapon: findEquipment("King's barrage"),
+        ammo: findEquipmentById(9144),
+      },
+      skills: {
+        ranged: 99,
+        hp: 99,
+      },
+      leagues: {
+        six: {
+          effects: {
+            talent_water_spell_damage_high_hp: 1,
+            talent_ice_counts_as_water: 1,
+          },
+        },
+      },
+    });
+
+    const baseExpected = new PlayerVsNPCCalc(basePlayer, monster)
+      .getDistribution()
+      .getExpectedDamage();
+    const noConversionExpected = new PlayerVsNPCCalc(noConversionPlayer, monster)
+      .getDistribution()
+      .getExpectedDamage();
+    const convertedExpected = new PlayerVsNPCCalc(convertedPlayer, monster)
+      .getDistribution()
+      .getExpectedDamage();
+
+    const getMaxKingBarragePair = (player: Parameters<typeof getTestPlayer>[1]) => {
+      const calc = new PlayerVsNPCCalc(getTestPlayer(monster, player), monster);
+      return calc.getDistribution().zipped.hits.reduce((best, current) => (
+        current.getSum() > best.getSum() ? current : best
+      ));
+    };
+
+    const basePair = getMaxKingBarragePair({
+      equipment: {
+        weapon: findEquipment("King's barrage"),
+        ammo: findEquipmentById(9144),
+      },
+      skills: {
+        ranged: 99,
+        hp: 99,
+      },
+    });
+    const convertedPair = getMaxKingBarragePair({
+      equipment: {
+        weapon: findEquipment("King's barrage"),
+        ammo: findEquipmentById(9144),
+      },
+      skills: {
+        ranged: 99,
+        hp: 99,
+      },
+      leagues: {
+        six: {
+          effects: {
+            talent_water_spell_damage_high_hp: 1,
+            talent_ice_counts_as_water: 1,
+          },
+        },
+      },
+    });
+
+    expect(noConversionExpected).toBe(baseExpected);
+    expect(convertedExpected).toBe(baseExpected);
+    expect(convertedPair.hitsplats[0].damage).toBe(basePair.hitsplats[0].damage);
+    expect(convertedPair.hitsplats[1].damage).toBe(basePair.hitsplats[1].damage);
   });
 });
